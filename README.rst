@@ -14,6 +14,7 @@ The latest source code is available at https://github.com/CIGNo-project/CIGNo. T
 
 
 For more information about CIGNo look at our federated system:
+
 * http://cigno.ve.ismar.cnr.it
 * http://cigno.corila.it
 
