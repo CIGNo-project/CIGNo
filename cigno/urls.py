@@ -1,17 +1,29 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from geonode.urls import *
 
+# admin-tools
 urlpatterns = patterns('',
-    # Example:
-    # (r'^cigno/', include('cigno.foo.urls')),
+                       url(r'^admin_tools/', include('admin_tools.urls')),
+                       ) + urlpatterns
 
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
-    # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    # Uncomment the next line to enable the admin:
-    # (r'^admin/', include(admin.site.urls)),
-)
+urlpatterns += patterns('cigno.metadata.views',
+                        url(r'^resource/upload$', 'upload_resource'),
+                        (r'^resource/(?P<resourcename>[^/]*)$', 'resourceController'),
+                        (r'^resource/(?P<resourceid>[^/]*)/ajax-permissions$', 'ajax_resource_permissions'),
+                        )
+
+urlpatterns += patterns('',
+                        (r'^tools/', include('cigno.tools.urls')),
+                        (r'^mdtools/', include('cigno.mdtools.urls')),
+                        (r'^elfinder/', include('elfinder.urls')),
+                        url(r'^rosetta/', include('rosetta.urls')),
+                        (r'^gemetclient/', 'cigno.metadata.views.gemetclient'),
+                        )
+
+
+# Extra static file endpoint for development use
+if settings.SERVE_MEDIA:
+    urlpatterns += staticfiles_urlpatterns()

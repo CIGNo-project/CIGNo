@@ -1,0 +1,77 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+{% block title %} {% trans "Upload spatial data" %} - {{ block.super }} {% endblock %}
+{% block head %} 
+  {{ block.super }} 
+
+
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/jquery-1.4.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/jquery-ui-1.7.2.custom.min.js" type="text/javascript" charset="utf-8"></script>
+
+	<link rel="stylesheet" href="{{ STATIC_URL }}cigno/externals/elfinder/js/ui-themes/smoothness/jquery-ui-1.7.2.custom.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<link rel="stylesheet" href="{{ STATIC_URL }}cigno/externals/elfinder/js/ui-themes/base/ui.all.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<link rel="stylesheet" href="{{ STATIC_URL }}cigno/externals/elfinder/css/elfinder.css" type="text/css" media="screen" title="no title" charset="utf-8">
+
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elFinder.js"               type="text/javascript" charset="utf-8"></script>
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elFinder.view.js"          type="text/javascript" charset="utf-8"></script>
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elFinder.ui.js"            type="text/javascript" charset="utf-8"></script>
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elFinder.quickLook.js"     type="text/javascript" charset="utf-8"></script>
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elFinder.eventsManager.js" type="text/javascript" charset="utf-8"></script>
+
+	<script src="{{ STATIC_URL }}cigno/externals/elfinder/js/elfinder.full.js" type="text/javascript" charset="utf-8"></script>
+
+	<!--script src="{{ STATIC_URL }}cigno/externals/elfinder/js/i18n/elfinder.ru.js"    type="text/javascript" charset="utf-8"></script-->
+
+	<style type="text/css">
+		#close, #open, #dock, #undock, #destroy {
+			width: 100px;
+			position:relative;
+			display: -moz-inline-stack;
+			display: inline-block;
+			vertical-align: top;
+			zoom: 1;
+			*display: inline;
+			margin:0 3px 3px 0;
+			padding:1px 0;
+			text-align:center;
+			border:1px solid #ccc;
+			background-color:#eee;
+			margin:1em .5em;
+			padding:.3em .7em;
+			border-radius:5px;
+			-moz-border-radius:5px;
+			-webkit-border-radius:5px;
+			cursor:pointer;
+		}
+	</style>
+
+	<script type="text/javascript" charset="utf-8">
+		$().ready(function() {
+			var f = $('#finder').elfinder({
+				url : '/elfinder/connector',
+				lang : 'it',
+				docked : true,
+				editorCallback : function(url) { window.console.log(url) },
+				closeOnEditorCallback : false,
+				selectMultiple : true,
+				dialog : {
+					title : 'File manager',
+					height : 500
+				}
+			})
+
+			$('#close,#open,#dock,#undock,#destroy').click(function() {
+				$('#finder').elfinder($(this).attr('id'));
+			})
+		})
+	</script>
+
+
+{% endblock %}
+
+{% block main %}
+<div class="onecol">
+	<!--div id="open">open</div><div id="close">close</div><div id="dock">dock</div><div id="undock">undock</div-->
+	<div id="finder">finder</div>
+</div>
+{% endblock %}

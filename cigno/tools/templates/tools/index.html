@@ -1,0 +1,42 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+{% block title %} {% trans "Tools" %} - {{ block.super }} {% endblock %}
+
+{% block main %}
+<div class="twocol">
+  <h4>Metadati INSPIRE</h4>
+  
+  <p>Strumento per l'editing dei metadati "INSPIRE compliant": <a href='{% url admin:metadata_layerext_changelist %}'>Metadata</a></p>
+
+
+  <h4>Geoserver</h4>
+
+  <p>GeoServer è accessibile all'indirizzo <a href='/geoserver'>GeoServer</a></p>
+
+  <h4>Monitoring</h4>
+
+  <p>Dopo aver definito i layer in geoserver è possibile importarli in geonode (e conseguentemente generare i metadati in geonetwork) utilizzando lo script <a href='{% url cigno.tools.views.monitoring %}'>Sincronizza GeoNode</a>. ATTENZIONE: lo script è sperimentale e potrebbe impiegare alcuni minuti!</p>
+
+  <h4>Upload spatial data</h4>
+  
+  <p>&Egrave; disponibile un servizio per la gestione dei dati spaziali per GeoServer: <a href='{% url cigno.tools.views.upload %}'>Upload spatial data</a></p>
+
+  <h4>Traduzioni</h4>
+  
+  <p><a href='/rosetta/'>Rosetta</a></p>
+
+</div>
+{% endblock %}
+{% block sidebar %}
+<div class="threecol">
+
+  <h3>GeoNode's Web Services</h3>
+  <p>GeoNode's Web Services are available from the following URLs:</p>
+  <ul>
+    <li><strong>WMS:</strong> <a href="{{site}}geoserver/wms">{{site}}geoserver/wms</a></li>
+    <li><strong>WFS:</strong> <a href="{{site}}/geoserver/wfs">{{site}}/geoserver/wfs</a></li>
+    <li><strong>CSW:</strong> <a href="{{site}}geonetwork/srv/en/csw">{{site}}geonetwork/srv/en/csw</a></li>
+    <li><strong>GeoWebCache Tiles:</strong> <a href="{{site}}/geoserver/gwc">{{site}}/geoserver/gwc</a></li>
+  </ul>
+</div>
+{% endblock %}
