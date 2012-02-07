@@ -1,0 +1,217 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {% trans "Upload digital resource"  %} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+{% include "geonode/app_header.html" %}
+{% include "geonode/geo_header.html" %}
+<link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/fileuploadfield/fileuploadfield.css"/>
+{{ block.super }}
+<script type="text/javascript">
+Ext.onReady(function() {
+});
+</script>
+{% endblock %}
+
+{% block main %}
+<div class="twocol">
+    <h2>{% trans "Add digital resource" %}</h2>
+  {% if errors %}
+    <div id="errors">
+      {% for error in errors %}
+        <div>{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div id="upload_form">
+  </div>
+</div>
+<script type="text/javascript">
+{% autoescape off %}
+Ext.onReady(function(){
+    Ext.QuickTips.init();
+    
+    var form_target = "{% url cigno.metadata.views.upload_resource %}";
+    var xml_unsafe = /(^[^a-zA-Z\._]+)|([^a-zA-Z0-9\._])/g;
+    var document_title = new Ext.form.TextField({
+      id: 'titleml_it',
+      fieldLabel: gettext('Title'),
+      name: 'titleml_it'
+    });
+
+    // var resource_type = new Ext.form.ComboBox({
+	//     id: 'resource_type',
+	//     editable: false,
+	//     typeAhead: false,
+	//     //readOnly: true,
+	//     triggerAction: 'all',
+	//     fieldLabel: 'Resource type',
+	//     name: 'resource_type_label',
+	//     allowBlank: false,
+	//     mode: 'local',
+	//     store: [[1, 'text'], [2, 'image']],
+	//     hiddenName: 'resource_type',
+
+	//     width:120,
+	//     listWidth: 120
+
+	// });
+    
+
+    var url_field = new Ext.form.TextField({	    
+	    // emptyText: gettext('Insert a valid resource URL'), // non posso usarlo altrimenti passa il valore via post
+	    fieldLabel: gettext('URL'),
+	    name: 'url_field'
+	});
+
+    var upload_mode = new Ext.form.RadioGroup({
+	    xtype: 'radiogroup',
+	    fieldLabel: 'Upload mode',
+	    cls: 'x-check-group-alt',
+	    items: [
+                {boxLabel: 'Upload file', name: 'upload_mode', inputValue: 'upload', checked: true},
+                {boxLabel: 'Link web resource', inputValue: 'link', name: 'upload_mode'}
+                //{boxLabel: 'Import web resource', inputValue: 'import', name: 'upload_mode'},
+	    ],
+	    listeners: {
+		"change": function(radiogroup, radio){
+		    if(radio.inputValue == 'link' || radio.inputValue == 'import' ){
+			link_mode();
+		    } else {
+			fileupload_mode();
+		    }
+		    //console.log(radiogroup);
+		    //console.log(radio);
+		}
+	    }
+	});
+
+
+    var listeners = {
+        "fileselected": function(cmp, value) {
+            // remove the path from the filename - avoids C:/fakepath etc.
+            cmp.setValue(value.split(/[/\\]/).pop());
+        }
+    };
+
+    var base_file = new Ext.ux.form.FileUploadField({
+        id: 'base_file',
+        emptyText: gettext('Select a file'),
+        fieldLabel: gettext('Resource'),
+        name: 'base_file',
+        allowBlank: false,
+        listeners: listeners
+    });
+
+    var abstractField = new Ext.form.TextArea({
+        id: 'abstractml_it', 
+        fieldLabel: gettext('Abstract'),
+        name: 'abstractml_it',
+        allowBlank: true
+    });
+
+    var permissionsField = new Ext.form.Hidden({
+        name: "permissions"
+    });
+
+    var fp = new Ext.FormPanel({
+        renderTo: 'upload_form',
+        fileUpload: true,
+        width: 500,
+        frame: true,
+        autoHeight: true,
+        unstyled: true,
+        labelWidth: 50,
+        defaults: {
+            anchor: '95%',
+            msgTarget: 'side'
+        },
+        //items: [upload_mode, base_file, url_field, document_title, resource_type, abstractField, permissionsField, {
+        items: [upload_mode, base_file, url_field, document_title, abstractField, permissionsField, {
+            xtype: "hidden",
+            name: "csrfmiddlewaretoken",
+            value: "{{ csrf_token }}"
+        }],
+        buttons: [{
+            text: gettext('Upload'),
+            handler: function(){
+                if (fp.getForm().isValid()) {
+                    fp.getForm().submit({
+                        url: form_target,
+                        waitMsg: gettext('Uploading your data...'),
+                        success: function(fp, o) {
+                            document.location = o.result.redirect_to;
+                        },
+                        failure: function(fp, o) {
+                            error_message = '<ul>';
+                            for (var i = 0; i < o.result.errors.length; i++) {
+                                error_message += '<li>' + o.result.errors[i] + '</li>'
+                            }
+                            error_message += '</ul>'
+
+                            Ext.Msg.show({
+                                title: gettext("Error"),
+                                msg: error_message,
+                                minWidth: 200,
+                                modal: true,
+                                icon: Ext.Msg.ERROR,
+                                buttons: Ext.Msg.OK
+                            });
+                        }
+                    });
+                }
+            }
+        }]
+    });
+
+    var link_mode = function(){
+	base_file.allowBlank= true;
+	url_field.allowBlank= false;
+	//url_field.emptyText=gettext('Insert a valid resource URL');
+	base_file.hide();
+	url_field.show();
+    }
+
+    var fileupload_mode = function(){
+	base_file.allowBlank= false;
+	url_field.allowBlank= true;
+	//url_field.emptyText='';
+	//console.log(url_field);
+	base_file.show();
+	url_field.hide();
+    }
+
+    fileupload_mode();
+  
+
+    var permissionsEditor = new GeoNode.PermissionsEditor({
+        renderTo: "permissions_form",
+        userLookup: "{% url geonode.views.ajax_lookup %}",
+        listeners: {
+            updated: function(pe) {
+                permissionsField.setValue(Ext.util.JSON.encode(pe.writePermissions()));
+            }
+        },
+        permissions: {
+            anonymous: 'resource_readonly',
+            authenticated: 'resource_readonly',
+            users:[]
+        },
+    });
+    permissionsEditor.fireEvent("updated", permissionsEditor);
+});
+{% endautoescape %}
+</script>
+
+{% endblock %}
+
+
+{% block sidebar %}
+<div class="threecol">
+<h3>{%trans "Permissions"  %}</h3>
+
+<div id="permissions_form"></div>
+{% endblock %}

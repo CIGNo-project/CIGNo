@@ -1,0 +1,13 @@
+<div>
+  {% if connector %}
+  <a href="{{ connector.d_content_object.get_edit_url }}">Edit</a>
+  {% endif %}
+  {% if form %}
+  <form action="/mdtools/connect/" method="POST">
+    <ul class="form">
+      {{ form.as_ul }}
+      <input type="submit" value="Open"/>
+    </ul>
+  </form>
+  {% endif %}
+</div>

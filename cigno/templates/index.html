@@ -1,0 +1,150 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {% trans "CIGNo network: CORILA Node" %} - {{ block.super }} {% endblock %}
+{% block indexclass %} class="here" {% endblock %}
+
+{% block head %} 
+{% include "geonode/ext_header.html" %}
+{{ block.super }}
+<script type="text/javascript" src="{{ STATIC_URL }}cigno/externals/slideshow/js/slideShow.js"></script>
+    <style>
+      * {margin: 0; padding:0; list-style: none;}
+      
+      /** 
+      CSS Necessario para a lib lionSlideShow
+      **/
+      .lionSlideShow img {
+      position: absolute;
+      }
+      .lionSlideShow .content {
+      position: absolute;
+      bottom: 0;
+      background: #000;
+      display: block
+      font-size: 12px;
+      color: #CCC;
+      padding: 5px;
+      width: 570px !important;
+      z-index: 200;
+      height: 80px;
+      }
+      .lionSlideShow .content h2 { font-size: 18px; color: #DDD; } 
+      .lionSlideShow .commons {
+      position: relative;
+      }
+      .lionSlideShow .commons .btrewind {
+      float: left;
+      background: url('{{ STATIC_URL }}cigno/externals/slideshow/img/left.gif') no-repeat center 104px;
+      }
+      .lionSlideShow .commons .btnext { 
+      float: right;
+      background: url('{{ STATIC_URL }}cigno/externals/slideshow/img/right.gif') no-repeat center 104px;
+      }
+      .lionSlideShow .commons .btrewind,
+      .lionSlideShow .commons .btnext {
+      text-indent: -90000000px;
+      overflow: hidden;
+      background-color: #000;
+      width: 38px;
+      }
+      .lionSlideShow .content{
+      opacity:.75;
+      filter:alpha(opacity=80);
+      }
+
+      div#slideshow-container {
+      width: 580px;
+      border: 2px solid #666;
+      /*background-image: url('http://cigno.ve.ismar.cnr.it/geoserver-geonode-dev/geonode/wms?LAYERS=geonode%3ABase50000SpeditivaTxt&STYLES=&FORMAT=image%2Fjpeg&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&CRS=EPSG%3A900913&BBOX=1319174,5637710,1441167,5717205&WIDTH=580&HEIGHT=378');*/
+      background-image: url('{{ STATIC_URL }}cigno/theme/img/idt_veneto_speditiva.jpeg');
+      }
+
+      div#slideShow {
+      background-image: url('http://www.silvenezia.it/geoserver/wms??SERVICE=WMS&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=sil2:bati_scanner_feat_unionsfondo&EXCEPTIONS=XML&VERSION=1.3.0&REQUEST=GetMap&TILED=true&SRS=EPSG%3A900913&BBOX=1319174,5637710,1441167,5717205&WIDTH=580&HEIGHT=378');
+      }
+</style>
+
+<script type="text/javascript">
+Ext.onReady(function(){
+{% autoescape off %}
+
+      var slideShow = new lionSlideShow({
+      applyTo: 'slideShow'
+      , autoStart: true
+      , width: 580
+      , height: 378
+      });
+
+
+{% endautoescape %}
+});
+</script>
+{% endblock %}
+
+{% block main %} 
+<div class="twocol">
+<!-- TODO: i18n on the text here -->
+  <div class="block">
+    <h2> {% trans "CIGNo network: CORILA Node" %} </h2>
+    <p>
+    {% blocktrans %} The CIGNo (Collaborative Interoperable Geographic
+    Node) network aims at implementing a collaborative federated
+    system to manage heterogeneous multimedia data (scientific and
+    geographic, textual documents, measurements tables, programs to
+    generate new higher level products) whose utilization can help
+    users (stakeholders, administrators, scientists) to
+    generate/discover knowledge on phenomena of interest.
+    </p>
+    <p>The three starting nodes in the network are implementing
+      at <a href="http://www.corila.it" target="_blank">CORILA</a>, 
+      <a href="http://www.ismar.cnr.it/index_html-1?set_language=en&cl=en">CNR-ISMAR</a>
+      and <a href="http://www.silvenezia.it">Venice Lagoon Atlas</a>
+    </p>
+    {% endblocktrans %}
+  </p>
+  </div>
+
+  <div id="slideshow-container" class="block">
+    <div id="slideShow">
+      <ul style="display: none;">
+	{% include "include_corila.html" %}
+      </ul>
+    </div>
+  </div>
+  <span><b>Web Map Service Slideshow</b> based on 
+   <a href="http://www.silvenezia.it" target="_blank">www.silvenezia.it</a> 
+   and <a href="http://cigno.corila.it" target="_blank">cigno.corila.it</a>.
+  </span>
+  <!--div class="block">
+    <h2> {% trans "Maps" %} </h2>
+    <p>
+    {% blocktrans %} 
+  GeoNode lets you compose and share maps.  <strong>Create</strong>
+      a map with our cartography tool, or <strong>explore</strong> maps
+      shared by others.
+    {% endblocktrans %} 
+  </p>
+    <div class="selfclear">
+      <div id="explore_map" class="content-button"></div>
+      <div id="create_map" class="content-button"></div>
+    </div>
+  </div-->
+
+
+</div>
+{% endblock %}
+{% block sidebar %}
+<div class="threecol" style="text-align: center;">
+  <h3>CIGNo Partners</h3>
+
+  <p><img src="{{ STATIC_URL }}cigno/theme/img/logoCORILA_80.png"/></p>
+  <p><span class="explain">{% trans "Consortium for Coordination of Research Activities concerning the Venice Lagoon System" %}</span></p>
+  <hr/>
+  <p><img src="{{ STATIC_URL }}cigno/theme/img/logoISMAR_100.png"/></p>
+  <p><span class="explain">{% trans "National Research Council - Institute of Marine Sciences" %}</span></p>
+  <hr/>
+  <p><img  src="{{ STATIC_URL }}cigno/theme/img/logoVenezia.png"/></p>
+  <p><span class="explain">{% trans "City of Venice" %}</span></p>
+</div>
+{% endblock %}

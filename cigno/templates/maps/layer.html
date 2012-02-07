@@ -1,0 +1,572 @@
+{% extends "page_layout.html" %}
+{% load geonode_auth %}
+{% load i18n %}
+{% comment %}
+{% load comments %}
+{% endcomment %}
+{% load mdtools %}
+
+{% block title %} {{ layer.layerext.title|default:layer.typename }} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+{% include "geonode/app_header.html" %}
+{% include "geonode/geo_header.html" %}
+<script type="text/javascript" src="/static/cigno/theme/js/RelationsManager.js"></script>  
+
+<!-- JIT Library File -->
+<script type="text/javascript" src="/static/cigno/externals/jit/js/jit-yc.js"></script>
+
+<!--link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" /-->
+
+<style>
+  #id_comment {
+     width: 250px;
+  }
+
+  #id_bbox{
+    text-align: center;
+  }
+
+/* INSPIRE validator results*/
+#totalIncorrectEle{
+   font-weight:bold;
+}
+
+#totalCorrectEle{
+   font-weight:bold;
+}
+
+/* hypertree */
+#infovis{
+    width: 100%;
+    height: 70%;
+    /*background-color: #1A1A1A;
+    color: #cccccc;*/
+    /*background-color: #dddddd;*/
+    background-color: #003c4c;
+    color: #1a1a1a;
+    text-align: center;
+}
+#infovis div{
+    font-family: "Lucida Grande",Verdana;
+}
+#infovis .node{
+   width: 150px;
+}
+
+#inner-details p{
+    margin: 5px;
+}
+</style>
+
+{{ block.super }}
+
+    <script type="text/javascript">
+
+{% autoescape off %}
+        var styleEditor, modified = false;
+        Ext.onReady(function() {
+            var config = {
+                tools: [{
+                    ptype: "gxp_wmsgetfeatureinfo",
+                    // uncomment the line below if you want feature info in a grid
+                    //format: "grid",
+                    actionTarget: "main.tbar",
+                    outputConfig: {width: 400, height: 200, panIn: false}
+                }],
+                proxy: "/proxy/?url=",
+                localGeoServerBaseUrl: "{{GEOSERVER_BASE_URL}}",
+                authorizedRoles: "{{ user.is_authenticated|yesno:"ROLE_ADMINISTRATOR,ROLE_ANONYMOUS" }}",
+
+                /* The URL to a REST map configuration service.  This service 
+                 * provides listing and, with an authenticated user, saving of 
+                 * maps on the server for sharing and editing.
+                 */
+                rest: "/maps/",
+                
+                portalConfig: {
+                    renderTo: "preview_map",
+                    height: 350
+                },
+
+                createTools: function() {
+                    return [new Ext.Button({
+                        tooltip: GeoExplorer.prototype.backgroundContainerText,
+                        iconCls: 'icon-layer-switcher',
+                        menu: new gxp.menu.LayerMenu({
+                            layers: this.mapPanel.layers
+                        })
+                    })]
+                },
+                listeners: {
+                    "ready": function() {
+                        var map = app.mapPanel.map;
+                        map.zoomToExtent(map.layers.slice(-1)[0].maxExtent);
+                    },
+                    "beforeunload": function() {
+                        if (modified) {
+                            styleEditor.show();
+                            return false;
+                        }
+                    }
+                }
+            };
+
+            config = Ext.apply(config, {{ viewer|safe }});
+
+            app = new GeoExplorer.Viewer(config);
+            
+            Ext.get(Ext.DomQuery.select("input[@name='style']")).on("click", function(evt, elem) {
+                app.selectedLayer.getLayer().mergeNewParams({
+                    "STYLES": elem.value,
+                    "_dc": Math.random()
+                });
+            });
+
+            Ext.get(Ext.DomQuery.select("select[@name='default-style']")).on("change", function(evt, elem) {
+                Ext.Ajax.request({
+                    method: "post",
+                    url: "?style",
+                    params: {"defaultStyle" : elem.value}
+                });
+            });
+{% has_obj_perm user layer "maps.change_layer" as can_change %}
+{% if can_change %}
+            Ext.get(Ext.DomQuery.select(".style-title")).on("click", function(evt, elem) {
+                showStyle(Ext.get(elem).prev("input").getAttribute("value"));
+            });
+{% endif %}
+
+{% has_obj_perm user layer "maps.change_layer_permissions" as can_change_permissions %}
+{% if can_change_permissions %}
+            new GeoNode.PermissionsEditor({
+                renderTo: "permissions_form",
+                userLookup: "{% url geonode.views.ajax_lookup %}",
+                permissions: {{ permissions_json }},
+                levels: {
+                    'admin': 'layer_admin',
+                    'readwrite': 'layer_readwrite',
+                    'readonly': 'layer_readonly',
+                    '_none': '_none'
+                },
+                listeners: {
+                    updated: function(perms) {
+                        var submitTo = "{% url geonode.maps.views.ajax_layer_permissions layer.typename %}";
+                        Ext.Ajax.request({ url: submitTo, jsonData: perms.writePermissions() });
+                    }
+                }
+            });
+{% endif %}
+        });
+
+        function showStyle(styleName) {
+            
+            if (!styleName) {
+                Ext.ComponentMgr.all.on("add", function(index, object) {
+                    if (object instanceof gxp.WMSStylesDialog) {
+                        Ext.ComponentMgr.all.un("add", arguments.callee);
+                        object.on("ready", function() {
+                            object.addStyle();
+                        }, this, {single: true});
+                    }
+                });
+            }
+            app.tools["styler"].actions[0].execute();
+        }
+{% endautoescape %}
+    </script>
+    <script>
+      contactInfo = new Ext.Window({
+        title: "Info",
+        autoHeight: false,
+        animScroll: true,
+        width: 280,
+        closeAction: "hide",
+        bodyStyle: "background-color: white;",
+        //items: stylesPanel,
+        listeners: {
+           "beforeclose": function() {
+              styleEditor = null;
+           }
+        } 
+      });
+    </script>
+    <script type="text/javascript">
+{% autoescape off %}
+Ext.onReady(function() {
+   var tabs = new Ext.TabPanel({
+      defaults:   {autoScroll:true, autoHeight:true},
+      autoHeight: true,
+      //boxMinWidth: 100,
+      renderTo: 'tabs-container',
+      activeTab: 0,
+      padding: 10,    
+      items:[
+         {contentEl:'identification', title:'Identification'},
+         {contentEl:'respparty', title:'{% trans "Resp. party" %}'},
+         {contentEl:'classification', title:'{% trans "Classification" %}'},
+         {contentEl:'geoext', title:'{% trans "Geo" %}'},
+         {contentEl:'tempext', title:'{% trans "Temporal" %}'},
+         {contentEl:'quality', title:'{% trans "Quality" %}'},
+         {contentEl:'constraints', title:'{% trans "Constraints" %}'},
+         {contentEl:'metametadata', title:'{% trans "Metadata" %}'},
+      ]
+   });
+   
+
+   var related_resources_panel = new Cigno.RelationsManager({
+      renderTo:'related_resources-manager',
+      rdf_url: '{% url cigno.mdtools.views_rdf.graph_connections %}',
+      rdf_s: '{{ layer.get_absolute_url }}'
+   });
+
+   var inspireVindow = new Ext.Window({
+      title: "INSPIRE Geoportal - metadata validator results",
+      autoHeight: false,
+      autoScroll: true,
+      width: 680,
+      height: 400,
+      closeAction: "hide",
+      bodyStyle: "padding: 10px; background-color: white;",
+      //items: stylesPanel,
+      listeners: {
+         "beforeclose": function() {
+              styleEditor = null;
+         }
+      },
+      autoLoad: "{% url cigno.mdtools.views.inspire_validator layer.uuid %}"
+   });
+
+   Ext.get('inspire-validator').addListener('click', function(){
+      inspireVindow.show();
+   });
+
+
+});
+
+{% endautoescape %}
+    </script>
+{% endblock %}
+
+{% block main %}
+<div class="twocol">
+{% comment %}
+<div id="description"> <h3> {{ layer.resource.title|default:layer.typename }} </h3> </div>
+<p> <strong>{% trans "Abstract" %}:</strong> {{ layer.abstract|default:_("No abstract for this layer.") }} </p>
+
+<div id="preview_map"></div>
+
+{% if layer.display_type %}<p> <strong>{% trans "Type" %}:</strong> {{ layer.display_type }} </p>{% endif %}
+{% if layer.keywords %}<p> <strong>{% trans "Keywords" %}:</strong> {{ layer.keywords }}</p>{% endif %}
+{% if layer.edition %}<p> <strong>{% trans "Edition" %}:</strong> {{ layer.edition }}</p>{% endif %}
+{% if layer.topic_category %}<p> <strong>{% trans "Topic Category" %}:</strong> {{ layer.topic_category }}</p>{% endif %}
+
+{% if layer.constraints_use or layer.constraints_other %}
+<p> <strong>{% trans "Citation" %}:</strong> 
+    {{ layer.constraints_use}} {{ layer.contraints_other}}
+</p>
+{% endif %}
+
+{% if layer.owner %}
+<p> <strong>{% trans "Owner" %}:</strong>
+    <a href="{{ layer.owner.get_profile.get_absolute_url }}"> {{ layer.owner.username }} </a>
+</p>
+{% endif %}
+
+{% if layer.poc %}
+<p> <strong>{% trans "Point of Contact" %}:</strong>
+  {% if layer.poc.user %}
+    <a href="{{ layer.poc.user.get_profile.get_absolute_url }}"> {{ layer.poc.user.username }} </a>
+  {% else %}
+    <ul>
+        {% if layer.poc.name %}<li><strong>{% trans "Name" %}:</strong> {{ layer.poc.name}}</li>{% endif %}
+        {% if layer.poc.email %}<li><strong>{% trans "Email" %}:</strong>  {{ layer.poc.email }}</li>{% endif %}
+        {% if layer.poc.organization %}<li><strong>{% trans "Organization" %}:</strong> {{ layer.poc.organization}}</li>{% endif %}
+        {% if layer.poc.position %}<li><strong>{% trans "Position" %}:</strong>: {{ layer.poc.position}}</li>{% endif %}
+        {% if layer.poc.voice %}<li><strong>{% trans "Voice" %}:</strong>  {{ layer.poc.voice}}</li>{% endif %}
+        {% if layer.poc.fax %}<li><strong>{% trans "Fax" %}:</strong> {{ layer.poc.fax}}</li>{% endif %}
+        {% if layer.poc.delivery %}<li><strong>{% trans "Delivery" %}:</strong> {{ layer.poc.delivery}}</li>{% endif %}
+        {% if layer.poc.area %}<li><strong>{% trans "Area" %}:</strong> {{ layer.poc.area}}</li>{% endif %}
+        {% if layer.poc.zipcode %}<li><strong>{% trans "Zip Code" %}:</strong> {{ layer.poc.zipcode}}</li>{% endif %}
+        {% if layer.poc.country %}<li><strong>{% trans "Country" %}:</strong> {{ layer.poc.country}}</li>{% endif %}
+    </ul>
+  {% endif %}
+</p>
+{% endif %}
+
+{% if layer.attribute_names %}
+<p> <strong>{% trans "Attributes" %}:</strong> 
+    {{ layer.attribute_names|join:", " }}
+</p>
+{% endif %}
+
+{% if layer.supplemental_information %}
+<p> <strong>{% trans "Supplemental Information" %}:</strong> 
+    {{ layer.supplemental_information }}
+</p>
+{% endif %}
+
+{% if layer.data_quality_statement %}
+<p> <strong>{% trans "Data Quality Statement" %}:</strong> 
+    {{ layer.data_quality_statement }}
+</p>
+{% endif %}
+
+{% if layer.geographic_bounding_box %}<p> <strong>{% trans "Bounding Box" %}:</strong> {{ layer.geographic_bounding_box }} </p>{% endif %}
+{% if layer.metadata.crsOptions %}<p> <strong>{% trans "Native SRS" %}:</strong> {{ layer.metadata.crsOptions.0|default:_("No SRS specified.") }} </p>{% endif %}
+{% endcomment %}
+
+<style>
+/* treepanel */
+   #related_resources-manager ul {
+      list-style-type: none;
+   }
+
+/*  .mdsection {
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+*/
+  .newline {
+    margin-left: 10px;
+    display: block;
+  }
+  .newline_detail {
+    margin-left: 10px;
+    font-size: 90%;
+    display: block;
+    color: #999999;
+  }
+</style>
+{% with layer.layerext.field_labels as fl %}{% with layer.layerext as md %}
+<div id="description"> <h3> {{ layer.layerext.titleml|default:layer.typename }} </h3> </div>
+{%if md.source_document %}
+<p id="data_ops">
+<span class="export">{% trans "Download resource" %}:</span>
+<a href="{{md.source_document.url}}">({% trans "Download" %})</a>
+<span class="newline_detail">{{ md.source_document.url|urlize }}</span>
+</p>
+{% endif %}
+<p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|truncatewords:30|default:_("No abstract for this layer.") }} </p>
+
+<div id="preview_map"></div>
+<div id="tabs-container"></div>
+
+<div id="identification" class="x-hide-display">
+<h4>{% trans "Identification" %}</h4>
+<p> <strong>{{ fl.title }}:</strong> {{ md.titleml }} </p>
+<p> <strong>{{ fl.referencedate }}</strong>
+  <ul>
+  {% for k in md.referencedate_set.all %} 
+  <li>{{ k.date|date:"d F Y" }} ({{ k.date_type }})</li>
+  {% endfor %}
+  </ul>
+</p>
+<p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|default:_("-") }} </p>
+<p> <strong>{{ fl.other_citation_details }}:</strong> {{ md.other_citation_details|default:_("-") }} </p>
+<p> <strong>{{ fl.supplemental_information }}:</strong> {{ md.supplemental_information|default:_("-") }} </p>
+<p> <strong>{{ fl.presentation_form }}:</strong> {{ md.presentation_form.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.distribution_format }}:</strong> {{ md.distribution_format.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.resource_type }}:</strong> {{ md.resource_type|default:_("-") }}</p>
+<p> <strong>{{ fl.uuid }}:</strong> {{ md.uuid|default:_("-") }}</p>
+<p> <strong>{{ fl.language }}:</strong> {{ md.language|default:_("-") }} </p>
+<p> <strong>{{ fl.character_set }}:</strong> {{ md.character_set|default:_("-") }} </p>
+<p> <strong>{{ fl.update_frequency }}:</strong> {{ md.update_frequency|default:_("-") }} </p>
+<p> <strong>{{ fl.spatial_representation_type_ext }}:</strong> {{ md.spatial_representation_type_ext.all|join:', '|default:_("-") }}</p>
+</div>
+<div id="respparty" class="x-hide-display">
+<h4>{% trans "Responsible party" %}</h4>
+<p > <strong>{{ fl.responsible_party_role }}:</strong>
+  {% for k in md.responsiblepartyrole_set.all %} 
+  {% include "metadata/responsibleparty.html" %}
+  {% endfor %}
+</p>
+</div>
+<div id="classification" class="x-hide-display">
+<h4>{% trans "Classification" %}</h4>
+<p> <strong>{{ fl.topic_category_ext }}:</strong> {{ md.topic_category_ext.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.keywords }}:</strong> 
+   <ul>
+     {% for k in md.keywords_list_language %}
+      <li><a target="_blank" href="{{ k.1 }}">{{ k.3 }}</a>
+        <span class="newline_detail">{{ k.0 }}</span>
+        <span class="newline_detail">{{ k.2 }}</span>
+      </li>
+    {% endfor %}
+   </ul>
+</p>
+<p> <strong>{{ fl.inspire }}:</strong> {% if md.inspire %}Si{% else %}No{% endif %}</p>
+</div>
+<div id="geoext" class="x-hide-display">
+<h4>{% trans "Geographic extent" %}</h4>
+<p> <strong>{{ fl.ref_sys }}:</strong>  <a target="_blank" href="http://spatialreference.org/ref/epsg/{{ md.ref_sys.srid }}/">{{ md.ref_sys }}</a></p>
+<p> <strong>{{ fl.geographic_bounding_box }}:</strong> 
+  <table id="id_bbox">
+    <tr><td></td><td>North<br/>{{ md.geographic_bounding_box_geometry.extent.3 }}</td><td></td></tr>
+    <tr><td>West<br/>{{ md.geographic_bounding_box_geometry.extent.0 }}</td><td></td><td>East<br/>{{ md.geographic_bounding_box_geometry.extent.2 }}</td></tr>
+    <tr><td></td><td>South<br/>{{ md.geographic_bounding_box_geometry.extent.1 }}</td><td></td></tr>
+  </table>
+</p>
+<p> <strong>{{ fl.vertical_datum }}:</strong> {{ md.vertical_datum|default:_("-") }}</p>
+<p> <strong>{{ fl.vertical_extent_min }}:</strong> {{ md.vertical_extent_min|default:_("-") }}</p>
+<p> <strong>{{ fl.vertical_extent_max }}:</strong> {{ md.vertical_extent_max|default:_("-") }}</p>
+<p> <strong>{{ fl.uom_vertical_extent }}:</strong> {{ md.uom_vertical_extent|default:_("-") }}</p>
+</div>
+<div id="tempext" class="x-hide-display">
+<h4>{% trans "Temporal extent" %}</h4>
+<p><strong>{{ fl.temporalextent }}</strong>
+  <ul>
+  {% for k in md.temporalextent_set.all %} 
+  <li>{{ k.temporal_extent_begin|date:"d F Y" }} ... {{ k.temporal_extent_end|date:"d F Y" }}</li>
+  {% endfor %}
+  </ul>
+</p>
+</div>
+<div id="quality" class="x-hide-display">
+<h4>{% trans "Quality - spatial resolution" %}</h4>
+<p> <strong>{{ fl.lineage }}:</strong> {{ md.lineage|default:_("-") }}</p>
+<p> <strong>{{ fl.equivalent_scale }}:</strong> {{ md.equivalent_scale|default:_("-") }}</p>
+<p> <strong>{{ fl.distance }}:</strong> {{ md.distance|default:_("-") }}</p>
+<p> <strong>{{ fl.uom_distance }}:</strong> {{ md.uom_distance|default:_("-") }}</p>
+</div>
+<div id="constraints" class="x-hide-display">
+<h4>{% trans "Constraints" %}</h4>
+<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("-") }}</p>
+<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>
+<p> <strong>{{ fl.use_constraints }}:</strong> {{ md.use_constraints|default:_("-") }}</p>
+<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>
+<p> <strong>{{ fl.security_constraints }}:</strong> {{ md.security_constraints|default:_("-") }}</p>
+</div>
+<div id="metametadata" class="x-hide-display">
+<h4>{% trans "Meta metadata" %}</h4>
+<p> <strong>{{ fl.md_date_stamp }}:</strong> {{ md.md_date_stamp|date:"d F Y" }}</p>
+<p > <strong>{{ fl.md_responsible_party_role }}:</strong>
+  {% for k in md.mdresponsiblepartyrole_set.all %} 
+  {% include "metadata/responsibleparty.html" %}
+  {% endfor %}
+</p>
+<p> <strong>{{ fl.md_character_set }}:</strong> {{ md.md_character_set }}</p>
+<p> <strong>{{ fl.md_standard_name }}:</strong> {{ md.md_standard_name }}</p>
+<p> <strong>{{ fl.md_version_name }}:</strong> {{ md.md_version_name }}</p>
+<p> <strong>{{ fl.md_uuid }}:</strong> {{ md.md_uuid }}</p>
+</div>
+
+</div>
+{% endwith %}{% endwith %}
+{% endblock %}
+
+{% block sidebar %}
+<div id="sidebar" class="threecol">
+    <h3> {% trans "GEMET keywords" %}</h3>
+    {% render_connections layer.layerext %}
+    <h3> {% trans "Related resources" %}</h3>
+    <div id="related_resources-manager"></div>
+    <br/>
+   <p><strong>INSPIRE Geoportal:</strong> <button id="inspire-validator">{% trans "Metadata Validation" %}</button></p>
+    
+    <h3> {% trans "Download" %} </h3>
+    <p> <strong>{% trans "Data" %}: </strong>
+        {% for extension, type, link in layer.download_links %}
+            <a href="{{link}}">{{type}}</a>
+        {% endfor %}
+    </p>
+    <p> <strong>{% trans "Metadata" %}: </strong>
+        {% for mimetype, mdtype, link in layer.metadata_links %}
+            <a href="{{link}}">{{mdtype}}</a>
+        {% empty %}
+            <em> {% trans "No metadata links provided for this data." noop %} </em>
+        {% endfor %}
+    </p>
+    <h3>{% trans "Maps" %} </h3>
+    {% if layer.maps %}
+    <p>{% trans "The following maps use this data set" %}:
+        <ul>
+            {% for map in layer.maps %} 
+            <li> <a href="{{map.get_absolute_url}}">{{map.title}}</a> </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p> {% trans "This layer is not currently used in any maps." %} </p>
+    {% endif %}
+    <p><a href="{% url geonode.maps.views.newmap %}?layer={{layer.typename}}">Create new map</a></p> 
+
+    {% has_obj_perm user layer "maps.change_layer" as can_change %}
+    {% has_obj_perm user layer "maps.delete_layer" as can_delete %}
+
+    <h3> {% trans "Styles" %} </h3>
+    <p> {% trans "The following styles are associated with this data set.  Choose a style to view it in the preview to the left.  Click on a style name to view or edit the style." %}
+    <br/>
+    <span class="styles-list">
+        <input type="radio" name="style" id="{{layer.publishing.default_style.name}}" value="{{layer.publishing.default_style.name}}" checked="checked"/>
+        <label for="{{layer.publishing.default_style.name}}" class="style-title"> {{ layer.default_style.name|title }} </label>
+        <a href="{{ layer.default_style.body_href }}">SLD</a><br/>
+    {% for style in layer.styles %} 
+        <input type="radio" name="style" id="{{style.name}}" value="{{style.name}}"/>
+        <label for="{{style.name}}" class="style-title"> {{ style.name|title }} </label>
+        <a href="{{ style.body_href }}">SLD</a><br/>
+    {% endfor %}
+    </span>
+    {% if user.is_authenticated and can_change %}
+    {% trans "Default style:" %}
+    <select name="default-style">
+        <option value="{{layer.publishing.default_style.name}}" selected="selected">
+          {{layer.publishing.default_style.name|title}}
+        </option>
+    {% for style in layer.styles %} 
+        <option value="{{style.name}}"> {{ style.name|title }} </option>
+    {% endfor %}
+    </select><br/>
+    <a href="javascript:showStyle()">Create new style</a>
+    {% endif %}
+
+    </p>
+
+
+
+    {% if user.is_authenticated %}
+    {% if can_change or can_delete or can_change_permissions %}
+
+        <h3> {% trans "Manage" %} </h3>
+        <ul>
+			{% if user.is_authenticated %}
+        {% if can_change %}
+                <!--li><a href="?describe">{% trans "Update the description of this data" %}</a></li-->
+		<!-- temporary link -->
+                <li><a href="/admin/metadata/layerext/{{layer.pk}}/">{% trans "Update the description of this data" %}</a></li>
+            	<li><a href="?update">{% trans "Upload a new version of this data" %}</a></li>
+        {% endif %}
+        {% if can_change_permissions %}
+        <li><a href="{% url edit_layer_permissions layer.typename %}">{% trans "Edit Permissions" %}</a></li>
+        {% endif %}
+            {% if can_delete %}
+				<li><a href="?remove">{% trans "Remove" %}</a></li>
+			{% endif %}
+			{% else %}
+				<li>Please authenticate to update or remove layers</li>
+			{% endif %}
+        </ul>
+    {% endif %}
+    {% has_obj_perm user layer "maps.change_layer_permissions" as can_change_permissions %}
+    {% if can_change_permissions %}
+    <h3>{% trans "Permissions" %}</h3>
+      <div id="permissions_form"></div>
+    {% endif %}
+    {% endif %}
+
+    {% comment %}
+
+    <p></p>	   
+    <h3> {% trans "Comments" %} </h3>
+    {% get_comment_count for layer.layerext as comment_count %}
+    <p>{{ comment_count }} comments have been posted.</p>
+    {% render_comment_list for layer.layerext %}
+
+    <h4> {% trans "Add a comment" %} </h4>
+    {% render_comment_form for layer.layerext %}
+
+    {% endcomment %}
+
+
+</div>
+{% endblock %}

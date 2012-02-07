@@ -1,0 +1,58 @@
+{% extends "geonode/templates/page_layout.html" %}
+{% load i18n %}
+  {% block head %}
+  <link rel="stylesheet" type="text/css" id="theme" href=""/>
+  <script>
+    Ext.onReady(function(){
+      var themeUrl = 'http://cigno.corila.it/static/cigno/externals/ext/resources/css/xtheme-grey.css' ;
+      Ext.util.CSS.swapStyleSheet("theme", themeUrl);
+    });
+  </script>
+
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}theme/boilerplate-min.css" media="screen" />
+  <!--[if lte IE 6]><link rel="stylesheet" href="{{ STATIC_URL }}theme/boilerplate-ie-min.css" type="text/css" media="screen" charset="utf-8"><![endif]-->
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}theme/site.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}cigno/theme/css/site.css" media="screen" />
+  <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+  <script type="text/javascript" src="{% url lang %}"></script>
+  {% endblock %}
+
+      {% block nav %}
+    <ul id="sitenav" class="selfclear">
+        <li class="home"><a href="{% url geonode.views.index %}">{% trans "Home" %}</a></li> 
+        <!--li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Data" %}</a></li-->
+        <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.search_page %}">{% trans "Search & Browse" %}</a></li>
+        <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
+    {% if user.is_authenticated %}
+	<li class=""><a class="" id="toolsLink" href="{% url geonode.maps.views.upload_layer%}">{% trans "Upload GeoData" %}</a></li>
+	<li class=""><a class="" id="toolsLink" href="{% url cigno.metadata.views.upload_resource%}">{% trans "Upload Resource" %}</a></li>
+        <li class=""><a class="" id="profileLink" href="{% url profiles_profile_detail user.username %}">{% trans "Profile" %}</a></li>
+    {% if user.is_staff %}
+        <li class=""><a class="" id="adminLink" href="/admin/">{% trans "Admin" %}</a></li>
+    {% endif %}
+    {% if user.is_superuser %}
+	<li class=""><a class="" id="toolsLink" href="{% url cigno.tools.views.index %}">{% trans "Extra" %}</a></li>
+    {% endif %}
+    {% endif %}
+
+   <!-- Only show the language form if the csrf_token is present -->
+   {% if csrf_token != "NOTPROVIDED" %}
+
+   {% get_current_language as LANGUAGE %}
+    <form class="langbar" id="target" action="/i18n/setlang/" method="post">
+      {% csrf_token %}
+       <div style="display: inline;">
+         <select id="langval" name="language" onchange="javascript:form.submit()">
+           {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}"
+                {% ifequal LANGUAGE_CODE lang.0 %} selected="selected"{% endifequal %}>
+                {{ lang.1 }}
+            </option>
+           {% endfor %}
+         </select>
+       </div>
+     </form>
+
+   {% endif %}
+    </ul>
+   {% endblock %}

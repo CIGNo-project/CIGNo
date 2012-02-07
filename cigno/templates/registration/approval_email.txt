@@ -1,0 +1,6 @@
+{% load i18n %}
+{% trans "Approval account at" %} {{ site.name }}:
+
+The Admin has approved your account.
+
+Login at http://{{ site.domain }}

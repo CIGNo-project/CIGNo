@@ -1,0 +1,106 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {{ layer.title }} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+<script type="text/javascript" src="/static/cigno/externals/gemetclient/build/GemetClient.js"></script>  
+<script type="text/javascript" src="/static/cigno/theme/js/GemetPanel.js"></script>  
+{{ block.super }}
+<script type="text/javascript">
+Ext.onReady(function() {
+   Ext.get('id_resource-gemetkeywords').setVisibilityMode(Ext.Element.DISPLAY).hide();
+   var keywordsGrid = new Cigno.KeywordsGrid({
+      loadData: function(){
+         var keydata = Ext.get('id_resource-gemetkeywords').getValue();
+         if(keydata != ''){
+	        this.store.loadData(Ext.util.JSON.decode(keydata));
+         }
+      },
+      writeData: function(){
+	     var keydata = [];
+	     for ( var i = 0; i < this.store.getCount(); i++ ) {
+		    rec = this.store.getAt(i);
+		    keydata.push([rec.data.terms, rec.data.uri, rec.data.thesaurus]);
+	     }
+         Ext.get('id_resource-gemetkeywords').update(Ext.util.JSON.encode(keydata));
+      }
+   });
+   var thes = new Cigno.ThesaurusReader({
+      lang: '{{ LANGUAGE_CODE }}',
+      //outputLangs: {{ output_langs|safe }},
+      outputLangs: ['it','en'],
+      keywordsGrid: keywordsGrid
+   });
+   new Ext.Panel({
+      renderTo: 'gemet-panel',
+      layout : 'border',
+      width:  570,
+      autoHeight: true,
+      layout: 'hbox',
+      items  : [
+    	 thes,
+		 keywordsGrid
+      ]
+   });
+});
+</script>
+<style>
+.form li input, .form li textarea, .form li select{
+  display: block;
+}
+
+#gemet-panel ul{
+   list-style-type: none;
+}
+
+
+#gemet-panel{
+   margin-bottom: 20px;
+}
+
+#gemet-panel li {
+   margin-bottom: 0em !important;
+}
+
+</style>
+{% endblock %}
+{% block main %}
+<div class="twocol">
+  <h2> {% trans "Editing details for " %} {{ layer.title }} </h2>
+
+  <form action="/resource/{{layer.pk}}?describe" method="POST">
+      <ul class="form">
+          {% csrf_token %}
+	      {{ resource_form.as_ul }}
+          <div id="gemet-panel"></div>
+          <input type="submit" value="{% trans "Update" %}"/>
+      </ul>
+  </form>
+</div>
+<script type="text/javascript">
+{% autoescape off %}
+    // Extify form fields
+    Ext.select("input[type='text']").each(function(el) {
+        if (el.hasClass("date")) {
+            new Ext.form.DateField({applyTo: el.id, format: "Y-m-d"});
+        } else if (el.hasClass("time")) {
+            new Ext.form.TimeField({applyTo: el.id, format: "H:i:s"})
+        }
+    });
+
+{% endautoescape %} 
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div id="sidebar" class="threecol">
+    {% if layer.extract_metadata %}
+    <h3> {% trans "Automatic Metadata Extraction" %} </h3>
+    {% for k in layer.extract_metadata %}
+      <p> <strong>{{ k.0 }}:</strong> {{ k.1 }} </p>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "registration/base.html" %}
+{% load i18n %}
+
+{% block main %}
+<div class="twocol">
+  <p>{% blocktrans with request.META.SERVER_NAME as domain %}Thank you for registering at {{ domain }}. Your application for an account is currently pending approval. Once it has been approved, you will receive another e-mail containing information about how to log in.{% endblocktrans %}</p>
+</div>
+{% endblock %}

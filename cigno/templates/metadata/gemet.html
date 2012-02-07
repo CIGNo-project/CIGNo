@@ -1,0 +1,75 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--html-->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="it" xml:lang="it" >
+<head>
+
+{% block head %}
+
+{% include "geonode/ext_header.html" %}
+<script>
+    Ext.onReady(function(){
+      var themeUrl = 'http://cigno.corila.it/static/cigno/externals/ext/resources/css/xtheme-grey.css' ;
+      Ext.util.CSS.swapStyleSheet("theme", themeUrl);
+    });
+</script>
+
+<script type="text/javascript" src="/static/cigno/externals/gemetclient/build/GemetClient.js"></script>  
+<script type="text/javascript" src="/static/cigno/theme/js/GemetPanel.js"></script>  
+
+
+<script type="text/javascript">
+// path to Ext images
+//Ext.BLANK_IMAGE_URL = 'http://dev.bnhelp.cz/wwwlibs/ext/2.2/resources/images/default/s.gif';
+
+// sets the user interface language
+//HS.setLang('it');
+//HS.setLang('{{ LANGUAGE_CODE }}');
+
+var thes;
+var store;
+
+// per poterlo usare con la versione di extjs bisogna cambiare il thesauri.js:
+//          getEl.innerHTML -> getEl.dom.innerHTML
+
+Ext.onReady(function(){  
+// create the Grid
+   var keywordsGrid = new Cigno.KeywordsGrid({
+      loadData: function(){
+         var keydata = parent.django.jQuery('#id_gemetkeywords').val();
+         if(keydata != ''){
+	        this.store.loadData(Ext.util.JSON.decode(keydata));
+         }
+      },
+      writeData: function(){
+	     var keydata = [];
+	     for ( var i = 0; i < this.store.getCount(); i++ ) {
+		    rec = this.store.getAt(i);
+		    keydata.push([rec.data.terms, rec.data.uri, rec.data.thesaurus]);
+	     }
+	     parent.django.jQuery('#id_gemetkeywords').val(Ext.util.JSON.encode(keydata));
+      }
+   });
+   var thes = new Cigno.ThesaurusReader({
+      lang: '{{ LANGUAGE_CODE }}',
+      outputLangs: {{ output_langs|safe }},
+      keywordsGrid: keywordsGrid
+   });
+   new Ext.Viewport({
+      layout : 'border',
+      items  : [
+    	 thes,
+		 keywordsGrid
+      ]
+   });
+});
+
+</script>
+    
+
+
+{{ block.super }}
+{% endblock %}
+</head>
+<body>
+</body>

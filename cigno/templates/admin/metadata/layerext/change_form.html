@@ -1,0 +1,100 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript">
+   django.jQuery(document).ready(function(){
+      // remove button
+      django.jQuery('[name="_addanother"]').hide();
+      django.jQuery('.deletelink-box').hide();
+
+      django.jQuery('#fieldsetcollapser1').parents('fieldset:first').children('div:first')
+      .after('{% blocktrans %}<div class="form-row help">\
+        <div>Indicate at least one of the following types of dates:\
+          <ul>\
+            <li> date of creation</li>\
+            <lI> date of publication</li>\
+            <li> date of review</li>\
+          </ul>\
+          There shall not be more than one date of creation.\
+		</div>\
+       </div>{% endblocktrans %}'
+      )
+      .after(django.jQuery("#referencedate_set-group"))
+      ;
+
+      django.jQuery('#fieldsetcollapser4').parents('fieldset:first').children('div:eq(2)')
+      .before('{% blocktrans %}<div class="form-row help">\
+      Discover the GEMET thesaurus:<br/>\
+      <a target="_blank" href="http://www.eionet.europa.eu/gemet/groups?langcode=en">Hierarchical Listings http://www.eionet.europa.eu/gemet/groups</a><br/>\
+      <a target="_blank" href="http://www.eionet.europa.eu/gemet/index_html?langcode=en">Thematic Listings http://www.eionet.europa.eu/gemet/index_html</a><br/>\
+      <a target="_blank" href="http://www.eionet.europa.eu/gemet/inspire_themes?langcode=en">Classification INSPIRE http://www.eionet.europa.eu/gemet/inspire_themes</a><br/>\
+      </div>{% endblocktrans %}');
+
+      //django.jQuery("#referencedate_set-group").css('margin',20);
+
+      django.jQuery(".inline-group").css('margin',20);
+
+      django.jQuery('#fieldsetcollapser3').parents('fieldset:first')
+      .append(django.jQuery("#responsiblepartyrole_set-group"));
+      
+      django.jQuery('#fieldsetcollapser6').parents('fieldset:first')
+      //.append(django.jQuery("#temporalextent_set-0").parents('fieldset:first'))
+      .append(django.jQuery("#temporalextent_set-group"))
+      .append('<div class="form-row">\
+	             <div>The temporal extent defines the time period covered by the content of the resource. This time period may be expressed as any of the following:\
+                   <ul>\
+                     <li> an individual date,</li>\
+                     <li> an interval of dates expressed through the starting date and end date of the interval,</li>\
+                     <li> a mix of individual dates and intervals of dates.</li>\
+                   </ul>\
+				 </div>\
+              </div>'
+             );
+
+      django.jQuery('#fieldsetcollapser0').parents('fieldset:first')
+      .append(django.jQuery("#mdresponsiblepartyrole_set-group"));
+
+      django.jQuery('#fieldsetcollapser8').parents('fieldset:first')
+      .append(django.jQuery("#conformity_set-group"))
+      .append('<div class="form-row">\
+	             <div>This is a citation of the implementing rules adopted under Article 7(1) of Directive 2007/2/EC or other specification to which a particular resource conforms.</div>\
+		         <div>A resource may conform to more than one implementing rules adopted under Article 7(1) of Directive 2007/2/EC or other specification.</div>\
+		         <div>This citation shall include at least the title and a reference date (date of publication, date of last revision or of creation) of the implementing rules adopted under Article 7(1) of Directive 2007/2/EC or of the specification.</div>\
+               </div>'
+             );// temporal extent
+
+      
+      django.jQuery('#fieldsetcollapser9').parents('fieldset:first').children('h2:first')
+      .after('<div class="form-row">\
+                <div>Conditions applying to access and use<br/>\
+		          This metadata element defines the conditions for access and use of spatial data sets and services, and where applicable, corresponding fees as required by Article 5(2)(b) and Article 11(2)(f) of Directive 2007/2/EC.<br/>\
+                  The value domain of this metadata element is free text.<br/>\
+				  The element must have values. If no conditions apply to the access and use of the resource, "no conditions apply" shall be used. If conditions are unknown, "conditions unknown" shall be used.<br/>\
+				  This element shall also provide information on any fees necessary to access and use the resource, if applicable, or refer to a uniform resource locator (URL) where information on fees is available.</div>\
+              </div>'
+            )
+      
+      
+      django.jQuery('.inline-group').find('h2').css('background', '#ccc');
+      
+
+
+      django.jQuery('#id_gemetkeywords').hide().parent().append(django.jQuery('<iframe id="gemetkeywords_clean"/>').attr('src','/gemetclient/').attr('class','selector').attr('style','height: 400px; border: none;'));
+      django.jQuery("h2:contains('Qualita')").parent().append(django.jQuery('#conformita_set-group'));
+      django.jQuery("h2:contains('Sezione Identificazione')").parent().append(django.jQuery('#responsabiledatiruolo_set-group'));
+      django.jQuery("h2:contains('Sezione Identificazione')").parent().append(django.jQuery('#puntocontattoruolo_set-group'));
+      django.jQuery("h2:contains('Sezione Identificazione')").parent().append(django.jQuery('#risorsaweb_set-group'));
+      django.jQuery("h2:contains('Sezione estensione temporale')").parent().append(django.jQuery('#riferimentotemporale_set-group'));
+      django.jQuery("h2:contains('Sezione estensione temporale')").parent().append(django.jQuery('#estensionetemporale_set-group'));
+      django.jQuery("h2:contains('Sezione Metadati')").parent().append(django.jQuery('#responsabilemdruolo_set-group'));
+
+      });
+   </script>
+   <style>
+     #id_unit_misura { width: 50px !important; }
+     #id_standard_md { width: 150px !important; }
+     #id_versione_standard_md { width: 150px !important; }
+   </style>
+{% endblock %}

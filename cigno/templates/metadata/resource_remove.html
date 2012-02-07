@@ -1,0 +1,20 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {{ resource.titleml }} - {{ block.super }} {% endblock %}
+
+{% block main %}
+
+<h3>{% trans "Are you sure you want to remove"  %} <strong>{{resource.titleml}}</strong>?</h3>
+
+<form action="/resource/{{resource.pk}}?remove" method="POST">
+	{% csrf_token %}
+	<input type="hidden" value="{{resource.pk}}" /> 
+	<input type="submit" value="{% trans "Yes I am sure"  %}" />
+</form>
+<form action="/resource/{{resource.pk}}" method="GET">
+    <button type="submit">{% trans "No, don't remove it" %}</button>
+</form>
+{% endblock %}
+
+
