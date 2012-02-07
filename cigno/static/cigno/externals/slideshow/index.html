@@ -1,0 +1,127 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>lionSlideShow</title>
+		<script type="text/javascript" src="js/extjs/ext-core.js"></script>
+		<script type="text/javascript" src="js/slideShow.js"></script>
+
+		<style>
+			* {margin: 0; padding:0; list-style: none;}
+	
+			/** 
+				CSS Necessario para a lib lionSlideShow
+			**/
+			.lionSlideShow img {
+				position: absolute;
+			}
+			.lionSlideShow .content {
+				position: absolute;
+				bottom: 0;
+				background: #000;
+				display: block
+				font-size: 12px;
+				color: #CCC;
+				padding: 5px;
+				width: 490px !important;
+				z-index: 200;
+				height: 50px;
+			}
+			.lionSlideShow .content h2 { font-size: 18px; color: #DDD; } 
+			.lionSlideShow .commons {
+				position: relative;
+			}
+			.lionSlideShow .commons .btrewind {
+				float: left;
+				background: url('img/left.gif') no-repeat center 104px;
+			}
+			.lionSlideShow .commons .btnext { 
+				float: right;
+				background: url('img/right.gif') no-repeat center 104px;
+			}
+			.lionSlideShow .commons .btrewind,
+			.lionSlideShow .commons .btnext {
+				text-indent: -90000000px;
+				overflow: hidden;
+				background-color: #000;
+				width: 38px;
+			}	
+			.lionSlideShow .content{
+				opacity:.8;
+				filter:alpha(opacity=80);
+			}
+	
+			/** 
+				CSS para o layout
+			**/
+			body {
+				color: #FFF;
+				background: #000;
+			}
+			div#wrapper {
+				width: 800px;
+				margin: 0 auto;
+				background: #000;
+				border-right: 3px solid #444;
+				border-left: 3px solid #444;
+			}
+	
+			div#wrapper div#left {
+				width: 500px;
+				float: left;
+				border-right: 2px solid #666;
+			}
+	
+			div#wrapper div#right {
+				margin-left: 505px;
+			}
+	
+			div#div-extra-1 {
+				clear: both;
+			}
+	
+		</style>
+	</head>
+	
+	<body>
+		<div id="wrapper">
+			<div id="left">
+				<div id="slideShow">
+					<ul>
+						<li class="item">
+							<span class="title">Ou aqui aa</span>
+							<span class="content">hadasjdas dajsdhasd asdjasndasjdhasdjasd</span>
+							<img src="" class="thumbnail" />
+							<img src="img/sea-turtle.jpg" class="background" />
+						</li>
+						<li class="item">
+							<span class="title">Ou aqui sadasd</span>
+							<span class="content">hadasjdas dajsdhasd asdjasndasjdhasdjasd</span>
+							<img src="http://www.site.com.br/thumbnail" class="thumbnail" />
+							<a href="" class="linkage"><img src="img/orange-fish.jpg" class="background" /></a>
+						</li>
+						<li class="item">
+							<span class="title">Ou aqui sadasd</span>
+							<span class="content">hadasjdas dajsdhasd asdjasndasjdhasdjasd</span>
+							<img src="http://www.site.com.br/thumbnail" class="thumbnail" />
+							<a href="" class="linkage"><img src="img/coral-reef.jpg" class="background" /></a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div id="right">
+				<h1>lionSlideShow v0.9</h1>
+				<p>Slide criado com o Extjs-CORE. Ainda necessita implementar o thumbnail e acertar a animação para o conteúdo escrito só não foi animado ainda porque no IE e Opera o methodo do FX.slideIn/Out() não estão se comportando como deve ser comportar, não sei se seria um bug do extjs pois no FF funciona essa animação mais no entanto não implementei a animação por causa desse problema.</p>
+				<p>Erick Leão (Perfect Lion)</p>
+				<p>07/07/2009</p>
+			</div>
+			<div id="div-extra-1"><span></span></div>
+		</div>
+
+		<script>
+			var slideShow = new lionSlideShow({
+				applyTo: 'slideShow'
+				, autoStart: true
+			});
+		</script>
+	</body>
+</html>

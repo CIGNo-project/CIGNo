@@ -1,0 +1,33 @@
+/** 
+ * theming styles
+ * 
+ */
+
+#branding {
+    background: url(../img/header-bg.png) 0 0 repeat-x;
+    border-bottom: 4px solid #008CB3;
+    border-top: 2px solid #7A7A7A;
+    height: 50px;
+}
+
+#header #branding h1 {
+    margin: 0;
+    padding: 5px 10px;
+    text-indent: -9999px;
+    /*background: transparent url(../images/django.png) 10px 5px no-repeat;*/
+    background: url("../img/logo-bg.png") no-repeat scroll 0 0 transparent;
+    height: 36px;
+    width: 93px;
+}
+
+div.breadcrumbs {
+    display: block;
+    padding: 10px 15px;
+    border: 0;
+    background-position: 0 -8px;
+    border-bottom: 1px solid #ededed;
+}
+
+div.breadcrumbs a {
+    display: inline;
+}

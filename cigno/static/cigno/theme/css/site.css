@@ -1,0 +1,172 @@
+/* customize search-table */
+span.remote-layer {
+    background-image: none;
+}
+
+/* start layer and resources */
+  #id_comment {
+     width: 250px;
+  }
+
+  #id_bbox{
+    text-align: center;
+  }
+
+/* INSPIRE validator results*/
+#totalIncorrectEle{
+   font-weight:bold;
+}
+#totalCorrectEle{
+   font-weight:bold;
+}
+
+/* hypertree */
+#infovis{
+    width: 100%;
+    height: 70%;
+    /*background-color: #1A1A1A;
+    color: #cccccc;*/
+    /*background-color: #dddddd;*/
+    background-color: #003c4c;
+    color: #1a1a1a;
+    text-align: center;
+}
+#infovis div{
+    font-family: "Lucida Grande",Verdana;
+}
+#infovis .node{
+   width: 150px;
+}
+#inner-details p{
+    margin: 5px;
+}
+/* end layer and resources */
+
+
+/* adjust ext.tree layout */
+#tabs-container ul {
+  list-style-type: none;
+}
+
+/* riposizione il menu selezionelingua */
+.langbar {
+top: 53px;
+}
+
+
+/* aggiunsto feature info nella mappa */
+.featureInfo  html,
+.featureInfo  body,
+.featureInfo  div,
+.featureInfo  span,
+.featureInfo  object,
+.featureInfo  iframe,
+.featureInfo  h1,
+.featureInfo  h2,
+.featureInfo  h3,
+.featureInfo  h4,
+.featureInfo  h5,
+.featureInfo  h6,
+.featureInfo  p,
+.featureInfo  blockquote,
+.featureInfo  pre,
+.featureInfo  a,
+.featureInfo  abbr,
+.featureInfo  acronym,
+.featureInfo  address,
+.featureInfo  code,
+.featureInfo  del,
+.featureInfo  dfn,
+.featureInfo  em,
+.featureInfo  img,
+.featureInfo  q,
+.featureInfo  dl,
+.featureInfo  dt,
+.featureInfo  dd,
+.featureInfo  ol,
+.featureInfo  ul,
+.featureInfo  li,
+.featureInfo  fieldset,
+.featureInfo  form,
+.featureInfo  label,
+.featureInfo  legend,
+.featureInfo  table,
+.featureInfo  caption,
+.featureInfo  tbody,
+.featureInfo  tfoot,
+.featureInfo  thead,
+.featureInfo  tr,
+.featureInfo  th,
+.featureInfo  td {
+margin: 0;
+padding: 0;
+border: 0;
+font-weight: inherit;
+font-style: inherit;
+font-size: 90%;
+font-family: inherit;
+vertical-align: baseline;
+}
+
+.featureInfo caption,
+.featureInfo th {
+text-align: left;
+font-weight: 400;
+}
+
+.featureInfo caption {
+  background: #FFC;
+}
+
+.featureInfo th {
+border-bottom: 2px solid #DDD;
+font-weight: bold;
+}
+
+.featureInfo th,
+.featureInfo td {
+padding: 4px 10px 4px 0;
+}
+
+/* end featureInfo */
+
+/* #header { */
+/*     background: url("./header-bg.png") repeat-x scroll 0 0 #00A6D3; */
+/* } */
+
+/* #logo-cigno { */
+/* float: left; */
+/* width: 350px; */
+/* height: 50px; */
+/* } */
+/* #logo-cigno a:active { */
+/* text-decoration: none; */
+/* } */
+/* .x-viewport #logo-cigno { */
+/* right: 10px; */
+/* } */
+
+/* #logo-cigno a { */
+/*     display: block; */
+/*     height: 50px; */
+/*     font-size: 18pt; */
+/*     color: #fff; */
+/*     font-weight: bold; */
+/*     text-decoration: none; */
+/*     vertical-align: middle; */
+/*     background: url("./logoCIGNo_white.png") no-repeat scroll 0 0 transparent; */
+/*     float: left; */
+/*     height: 51px; */
+/*     overflow: hidden; */
+/*     text-indent: 2em; */
+/*     width: 172px; */
+/* } */
+
+.form input[type=text],textarea{
+    width: 500px;
+    height: 50;
+}
+
+.form textarea{
+    height: 100px;
+}
