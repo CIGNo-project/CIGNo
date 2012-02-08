@@ -57,7 +57,7 @@
       width: 580px;
       border: 2px solid #666;
       /*background-image: url('http://cigno.ve.ismar.cnr.it/geoserver-geonode-dev/geonode/wms?LAYERS=geonode%3ABase50000SpeditivaTxt&STYLES=&FORMAT=image%2Fjpeg&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&CRS=EPSG%3A900913&BBOX=1319174,5637710,1441167,5717205&WIDTH=580&HEIGHT=378');*/
-      background-image: url('{{ STATIC_URL }}cigno/theme/img/idt_veneto_speditiva.jpeg');
+      background-image: url('{{ STATIC_URL }}cigno/img/idt_veneto_speditiva.jpeg');
       }
 
       div#slideShow {
@@ -138,13 +138,13 @@ Ext.onReady(function(){
 <div class="threecol" style="text-align: center;">
   <h3>CIGNo Partners</h3>
 
-  <p><img src="{{ STATIC_URL }}cigno/theme/img/logoCORILA_80.png"/></p>
+  <p><img src="{{ STATIC_URL }}cigno/img/logoCORILA_80.png"/></p>
   <p><span class="explain">{% trans "Consortium for Coordination of Research Activities concerning the Venice Lagoon System" %}</span></p>
   <hr/>
-  <p><img src="{{ STATIC_URL }}cigno/theme/img/logoISMAR_100.png"/></p>
+  <p><img src="{{ STATIC_URL }}cigno/img/logoISMAR_100.png"/></p>
   <p><span class="explain">{% trans "National Research Council - Institute of Marine Sciences" %}</span></p>
   <hr/>
-  <p><img  src="{{ STATIC_URL }}cigno/theme/img/logoVenezia.png"/></p>
+  <p><img  src="{{ STATIC_URL }}cigno/img/logoVenezia.png"/></p>
   <p><span class="explain">{% trans "City of Venice" %}</span></p>
 </div>
 {% endblock %}

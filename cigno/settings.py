@@ -64,7 +64,7 @@ ELFINDER = {'root': '/var/lib/geoserver/geonode-data/',
 
 # ADMIN_TOOLS_MEDIA_URL = SITEURL + 'media/static/'
 ADMIN_TOOLS_MENU = 'cigno.menu.CustomMenu'
-ADMIN_TOOLS_THEMING_CSS = 'cigno/theme/css/admin_tools.css'
+ADMIN_TOOLS_THEMING_CSS = 'cigno/css/admin_tools.css'
 
 ADMIN_TOOLS_INDEX_DASHBOARD = 'cigno.dashboard.CustomIndexDashboard'
 ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'cigno.dashboard.CustomAppIndexDashboard'
