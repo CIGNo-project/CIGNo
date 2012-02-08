@@ -419,7 +419,7 @@ class Resource(Inspire, PermissionLevelMixin):
     def metadata_links(self):
         if not hasattr(self, "_metadata_links_cache"):
             gn = Layer.objects.gn_catalog
-            self._metadata_links_cache = [('text/xml', 'Dublin Core', gn.url_for_uuid(self.uuid, None))]
+            self._metadata_links_cache = [('text/xml', 'TC211', gn.url_for_uuid(self.uuid))]
         return self._metadata_links_cache
 
     def save_to_geonetwork(self):
