@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#'
+   xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+   xmlns:gemet="http://www.eionet.europa.eu/gemet/2004/06/gemet-schema.rdf#"
+   xmlns:cigno="http://www.corila.it/cigno/cigno-schema.rdf#"
+   xml:base="http://www.corila.it/cigno/">
+  
+  <skos:Collection rdf:about="researchareas/">
+    <skos:prefLabel>Supergroups</skos:prefLabel>
+    <!--skos:inScheme rdf:resource="http://www.eionet.europa.eu/gemet/gemetThesaurus"/-->
+    <skos:member rdf:resource="researchareas/1"/>
+    <skos:member rdf:resource="researchareas/2"/>
+    <skos:member rdf:resource="researchareas/3"/>
+    <skos:member rdf:resource="researchareas/4"/>
+  </skos:Collection>
+
+  <rdf:Description rdf:about="researchareas/">
+    <rdf:type rdf:resource="http://www.corila.it/cigno/cigno-schema.rdf#ResearchAreas"/>
+    <rdfs:label>Aree ricerca</rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="researchareas/1">
+    <rdf:type rdf:resource="http://www.corila.it/cigno/cigno-schema.rdf#ResearchArea"/>
+    <rdfs:label>Processi ambientali</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="researchareas/2">
+    <rdf:type rdf:resource="http://www.corila.it/cigno/cigno-schema.rdf#ResearchArea"/>
+    <rdfs:label>Economia e aspetti sociali</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="researchareas/3">
+    <rdf:type rdf:resource="http://www.corila.it/cigno/cigno-schema.rdf#ResearchArea"/>
+    <rdfs:label>Architettura e beni culturali</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="researchareas/4">
+    <rdf:type rdf:resource="http://www.corila.it/cigno/cigno-schema.rdf#ResearchArea"/>
+    <rdfs:label>Gestione dati</rdfs:label>
+  </rdf:Description>
+
+  <skos:Collection rdf:about="researchareas/1">
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/40"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/18"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/23"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/3"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/4"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/6"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/7"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/8"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/10"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/25"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/16"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/20"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/26"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/21"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/12"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/11"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/30"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/39"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/35"/>
+  </skos:Collection>
+
+  <skos:Collection rdf:about="researchareas/2">
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/40"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/2"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/18"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/38"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/1"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/34"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/33"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/9"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/10"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/19"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/20"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/26"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/21"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/12"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/11"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/30"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/39"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/37"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/29"/>
+  </skos:Collection>
+
+  <skos:Collection rdf:about="researchareas/3">
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/5"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/20"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/21"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/27"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/30"/>
+  </skos:Collection>
+  
+  <skos:Collection rdf:about="researchareas/4">
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/20"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/30"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/36"/>
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/21"/>
+  </skos:Collection>
+</rdf:RDF>
