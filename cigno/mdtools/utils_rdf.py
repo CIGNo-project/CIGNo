@@ -31,6 +31,7 @@ def get_rdflib_store(db_conn, load_triples=True):
         'http://www.eionet.europa.eu/gemet/gemet-definitions.rdf?langcode=en',
         'http://www.eionet.europa.eu/gemet/gemet-definitions.rdf?langcode=it',
         'http://dublincore.org/2010/10/11/dcterms.rdf',
+        'http://www.geonames.org/ontology/ontology_v3.01.rdf'
         ]
       for source in sources:
         if not surfstore.load_triples(source = source):

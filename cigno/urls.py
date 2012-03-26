@@ -10,9 +10,13 @@ urlpatterns = patterns('',
 
 
 urlpatterns += patterns('cigno.metadata.views',
-                        url(r'^resource/upload$', 'upload_resource'),
+                        # url(r'^resource/upload$', 'upload_resource'),
+                        (r'^resource/upload$', 'resource_metadata'),
                         (r'^resource/(?P<resourcename>[^/]*)$', 'resourceController'),
+                        (r'^resource/(?P<resource>[^/]*)/metadata$', 'resource_metadata'),
                         (r'^resource/(?P<resourceid>[^/]*)/ajax-permissions$', 'ajax_resource_permissions'),
+                        (r'^api/(?P<model>[^/]*)/$', 'api'),
+                        (r'^api/(?P<model>[^/]*)/(?P<id>[^/]*)/$', 'api'),
                         )
 
 urlpatterns += patterns('',
@@ -22,7 +26,6 @@ urlpatterns += patterns('',
                         url(r'^rosetta/', include('rosetta.urls')),
                         (r'^gemetclient/', 'cigno.metadata.views.gemetclient'),
                         )
-
 
 # Extra static file endpoint for development use
 if settings.SERVE_MEDIA:

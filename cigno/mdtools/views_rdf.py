@@ -23,6 +23,8 @@ surf.ns.register(gemet="http://www.eionet.europa.eu/gemet/2004/06/gemet-schema.r
 surf.ns.register(cigno="http://www.corila.it/cigno/cigno-schema.rdf#")
 surf.ns.register(cignos="http://www.corila.it/cigno/")
 surf.ns.register(gmd="http://www.isotc211.org/2005/gmd/")
+surf.ns.register(gn="http://www.geonames.org/ontology#")
+surf.ns.register(gnfeatures="http://sws.geonames.org/")
 surf.ns.register(local=settings.SITEURL.rstrip('/'))
 
 supported_relations = ['http://purl.org/dc/terms/hasPart',
@@ -68,6 +70,7 @@ class CignoRDF(object):
     self.Relations = self.Properties.get_by(rdfs_subPropertyOf = surf.ns.DCTERMS['relation'])
     self.Collections = self.session.get_class(surf.ns.SKOS['Collection'])
     self.ResearchAreas = self.session.get_class(surf.ns.CIGNO['ResearchArea'])
+    self.GeoNames = self.session.get_class(surf.ns.GN['Feature'])
   def close(self):
     # self.store.close()
     self.session.commit()
@@ -86,7 +89,7 @@ class CignoRDF(object):
     s = URIRef(s) if  not isinstance(s, URIRef) else s
     self.store.remove_triple(s, None, None)
     self.store.remove_triple(None, None, s)
-
+    
   def add_resource_keywords(self, resource_uri, uuid, resource_labels = None, keywords = None):
     resource = self.session.get_resource(resource_uri, self.CignoResources)
     resource.rdfs_label = [] # clean
@@ -101,10 +104,10 @@ class CignoRDF(object):
 
   def add_triple(self, s, p, o):
     s = URIRef(s) if  not isinstance(s, URIRef) else s
-    p = URIRef(s) if  not isinstance(p, URIRef) else p
-    o = URIRef(s) if  not isinstance(o, URIRef) else o
-    store.add_triple(s, p, o)
-    store.save()
+    p = URIRef(p) if  not isinstance(p, URIRef) else p
+    o = URIRef(o) if  not isinstance(o, URIRef) else o
+    self.store.add_triple(s, p, o)
+    self.store.save()
 
   def get_where_tree(self, res):
     if res.subject == rdflib.term.URIRef('http://www.corila.it/cigno/researchareas/'):
@@ -345,6 +348,23 @@ def rdfapi(request, action="read"):
   if action == 'read':
     # TODO inspect resource type
     json = {'rows': [], 'count': 0}
+
+    # append converage
+    uritype = 'http://purl.org/dc/terms/spatial'
+    for node in getattr(_subject, surf.util.rdf2attr(uritype, True)):
+      _predicate = crdf.Properties(uritype)
+      node = crdf.GeoNames(node) if  isinstance(node, URIRef) else node
+      node.load()
+      _object = node
+      json['rows'].append({'id': '%s|%s|%s' % (s, _predicate.subject, _object.subject),
+                           's': s, 
+                           'p': _predicate.subject, 
+                           'o': _object.subject,
+                           'pl': _predicate.rdfs_label.first,
+                           'ol': _object.gn_name.first,
+                           'd': True
+                           })
+
     for uritype in supported_relations:
       for node in getattr(_subject, surf.util.rdf2attr(uritype, True)):
         _predicate = crdf.Properties(uritype)
@@ -384,6 +404,11 @@ def rdfapi(request, action="read"):
       # if row['p'] in reverse_relations:
       #  store.add_triple(rdflib.URIRef(row['o']), rdflib.URIRef(reverse_relations[row['p']]), rdflib.URIRef(s))
     crdf.store.save()
+    # if external try to load rdf info
+    # TODO: use a better test and test if already loaded
+    if not row['o'].startswith(surf.ns.LOCAL):
+      crdf.store.load_triples(source = row['o'])
+
     json = {'success': True}
     # get type
     #result = session.default_store.execute_sparql("SELECT ?o WHERE { <%s> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o }" % )
@@ -507,3 +532,24 @@ def _classification_search(query, start, limit, **kw):
     
     return result
 
+
+from modeltranslation.settings import DEFAULT_LANGUAGE, AVAILABLE_LANGUAGES
+from modeltranslation.utils import build_localized_fieldname, get_language
+# list of rdflib.termLiteral
+# literl by language
+def lbyl(terms, lang_priority = None):
+    terms_dict = {}
+    if not lang_priority:
+        lang_priority = [get_language(), DEFAULT_LANGUAGE]
+    for i in terms:
+        terms_dict[i.language] = i
+    for lang in lang_priority:
+        value = terms_dict.get(lang)
+        if value is not None:
+            return value
+    return terms.first
+        
+
+    
+    
+    

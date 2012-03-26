@@ -21,7 +21,7 @@
 		</div>\
        </div>{% endblocktrans %}'
       )
-      .after(django.jQuery("#resourcereferencedate_set-group"))
+      .after(django.jQuery("#referencedate_set-group"))
       ;
 
       django.jQuery('#fieldsetcollapser4').parents('fieldset:first').children('div:eq(2)')
@@ -37,11 +37,11 @@
       django.jQuery(".inline-group").css('margin',20);
 
       django.jQuery('#fieldsetcollapser3').parents('fieldset:first')
-      .append(django.jQuery("#resourceresponsiblepartyrole_set-group"));
+      .append(django.jQuery("#responsiblepartyrole_set-group"));
       
       django.jQuery('#fieldsetcollapser6').parents('fieldset:first')
       //.append(django.jQuery("#temporalextent_set-0").parents('fieldset:first'))
-      .append(django.jQuery("#resourcetemporalextent_set-group"))
+      .append(django.jQuery("#temporalextent_set-group"))
       .append('<div class="form-row">\
 	             <div>The temporal extent defines the time period covered by the content of the resource. This time period may be expressed as any of the following:\
                    <ul>\
@@ -54,10 +54,10 @@
              );
 
       django.jQuery('#fieldsetcollapser0').parents('fieldset:first')
-      .append(django.jQuery("#resourcemdresponsiblepartyrole_set-group"));
+      .append(django.jQuery("#mdresponsiblepartyrole_set-group"));
 
       django.jQuery('#fieldsetcollapser8').parents('fieldset:first')
-      .append(django.jQuery("#resourceconformity_set-group"))
+      .append(django.jQuery("#conformity_set-group"))
       .append('<div class="form-row">\
 	             <div>This is a citation of the implementing rules adopted under Article 7(1) of Directive 2007/2/EC or other specification to which a particular resource conforms.</div>\
 		         <div>A resource may conform to more than one implementing rules adopted under Article 7(1) of Directive 2007/2/EC or other specification.</div>\
