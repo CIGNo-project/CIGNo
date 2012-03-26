@@ -1,0 +1,120 @@
+{% load i18n %}
+
+<script type="text/javascript">
+{% autoescape off %}
+Ext.onReady(function() {
+   var tabs = new Ext.TabPanel({
+      defaults:   {autoScroll:true, autoHeight:true},
+      autoHeight: true,
+      //boxMinWidth: 100,
+      renderTo: 'tabs-container',
+      activeTab: 0,
+      padding: 10,    
+      items:[
+         {contentEl:'identification', title:"Identification"},
+         {contentEl:'classification', title: "Classification"},
+         {contentEl:'spatial', title:'{% trans "Spatial information" %}'},
+         {contentEl:'additional', title: "Additional information"},
+      ]
+   });
+});
+{% endautoescape %}
+</script>
+
+<div id="tabs-container"></div>
+
+<div id="identification" class="x-hide-display">
+<!--h4>{% trans "Identification" %}</h4-->
+<!--p> <strong>{{ fl.titleml }}:</strong> {{ md.titleml }} </p-->
+<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|default:_("-") }} </p>
+<p> <strong>{% firstof fl.referencedate fl.resourcereferencedate %}</strong>
+  {% for k in md.referencedate_set.all %} 
+  {% if forloop.first %}<ul>{% endif %}
+  <li>{{ k.date|date:"d F Y" }} ({{ k.date_type }})</li>
+  {% if forloop.last %}</ul>{% endif %}
+  {% empty %} - 
+  {% endfor %}
+  </ul>
+</p>
+<p><strong>{% firstof fl.temporalextent fl.resourcetemporalextent %}:</strong>
+  {%for k in md.temporalextent_set.all %} 
+  {% if forloop.first %}<ul>{% endif %}
+  <li>{{ k.temporal_extent_begin|date:"d F Y" }} ... {{ k.temporal_extent_end|date:"d F Y" }}</li>
+  {% if forloop.last %}</ul>{% endif %}
+  {% empty %} - 
+  {% endfor %}
+</p>
+<hr/>
+{% if md.use_limitation %}<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("-") }}</p>{% endif %}
+{% if md.access_constraints %}<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>{% endif %}
+<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("<a href='http://creativecommons.org/licenses/by-nc/3.0/it/deed.it'>Creative Commons Attribuzione - Non commerciale 3.0</a>") }}</p>
+{% if md.other_constraints %}<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>{% endif %}
+{% if md.security_constraints %}<p> <strong>{{ fl.security_constraints }}:</strong> {{ md.security_constraints|default:_("-") }}</p>{% endif %}
+<hr/>
+<p > <strong>{{ fl.responsible_party_role }}:</strong>
+  {% for k in md.responsiblepartyrole_set.all %} 
+  {% include "metadata/responsibleparty.html" %}
+  {% endfor %}
+</p>
+</div>
+<div id="classification" class="x-hide-display">
+<p> <strong>{{ fl.topic_category_ext }}:</strong> {{ md.topic_category_ext.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.gemetkeywords }}:</strong> 
+   <ul>
+     {% for k in md.keywords_list_language %}
+      <li><a target="_blank" href="{{ k.1 }}">{{ k.3 }}</a>
+        <span class="newline_detail">{{ k.0 }}</span>
+        <span class="newline_detail">{{ k.2 }}</span>
+      </li>
+    {% endfor %}
+   </ul>
+</p>
+</div>
+<div id="spatial" class="x-hide-display">
+<h4>{% trans "Geographic extent" %}</h4>
+<p> <strong>{{ fl.ref_sys }}:</strong>  <a target="_blank" href="http://spatialreference.org/ref/epsg/{{ md.ref_sys.srid }}/">{{ md.ref_sys }}</a></p>
+<p> <strong>{{ fl.geographic_bounding_box }}:</strong> 
+  <table id="id_bbox">
+    <tr><td></td><td>North<br/>{{ md.geographic_bounding_box_geometry.extent.3 }}</td><td></td></tr>
+    <tr><td>West<br/>{{ md.geographic_bounding_box_geometry.extent.0 }}</td><td></td><td>East<br/>{{ md.geographic_bounding_box_geometry.extent.2 }}</td></tr>
+    <tr><td></td><td>South<br/>{{ md.geographic_bounding_box_geometry.extent.1 }}</td><td></td></tr>
+  </table>
+</p>
+<p> <strong>{{ fl.vertical_datum }}:</strong> {{ md.vertical_datum|default:_("-") }}</p>
+<p> <strong>{{ fl.vertical_extent_min }}:</strong> {{ md.vertical_extent_min|default:_("-") }}</p>
+<p> <strong>{{ fl.vertical_extent_max }}:</strong> {{ md.vertical_extent_max|default:_("-") }}</p>
+<p> <strong>{{ fl.uom_vertical_extent }}:</strong> {{ md.uom_vertical_extent|default:_("-") }}</p>
+<hr/>
+<h4>{% trans "Quality - spatial resolution" %}</h4>
+<p> <strong>{{ fl.lineage }}:</strong> {{ md.lineage|default:_("-") }}</p>
+<p> <strong>{{ fl.equivalent_scale }}:</strong> {{ md.equivalent_scale|default:_("-") }}</p>
+<p> <strong>{{ fl.distance }}:</strong> {{ md.distance|default:_("-") }}</p>
+<p> <strong>{{ fl.uom_distance }}:</strong> {{ md.uom_distance|default:_("-") }}</p>
+</div>
+<div id="additional" class="x-hide-display">
+<!--h4>{% trans "Tmp" %}</h4-->
+<p> <strong>{{ fl.other_citation_details }}:</strong> {{ md.other_citation_details|default:_("-") }} </p>
+<p> <strong>{{ fl.supplemental_information_ml }}:</strong> {{ md.supplemental_information_ml|default:_("-") }} </p>
+<hr/>
+<p> <strong>{{ fl.presentation_form }}:</strong> {{ md.presentation_form.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.distribution_format }}:</strong> {{ md.distribution_format.all|join:', '|default:_("-") }}</p>
+<p> <strong>{{ fl.resource_type }}:</strong> {{ md.resource_type|default:_("-") }}</p>
+<!--p> <strong>{{ fl.uuid }}:</strong> {{ md.uuid|default:_("-") }}</p-->
+<p> <strong>{{ fl.language }}:</strong> {{ md.language|default:_("-") }} </p>
+<p> <strong>{{ fl.character_set }}:</strong> {{ md.character_set|default:_("-") }} </p>
+<p> <strong>{{ fl.update_frequency }}:</strong> {{ md.update_frequency|default:_("-") }} </p>
+<p> <strong>{{ fl.spatial_representation_type_ext }}:</strong> {{ md.spatial_representation_type_ext.all|join:', '|default:_("-") }}</p>
+<hr>
+<h4>{% trans "Metadata details" %}</h4>
+<p> <strong>{{ fl.md_date_stamp }}:</strong> {{ md.md_date_stamp|date:"d F Y" }}</p>
+<p > <strong>{{ fl.md_responsible_party_role }}:</strong>
+  {% for k in md.mdresponsiblepartyrole_set.all %} 
+  {% include "metadata/responsibleparty.html" %}
+  {% endfor %}
+</p>
+<p> <strong>{{ fl.md_character_set }}:</strong> {{ md.md_character_set }}</p>
+<p> <strong>{{ fl.md_standard_name }}:</strong> {{ md.md_standard_name }}</p>
+<p> <strong>{{ fl.md_version_name }}:</strong> {{ md.md_version_name }}</p>
+<!--p> <strong>{{ fl.md_uuid }}:</strong> {{ md.md_uuid }}</p-->
+<p> <strong>{{ fl.inspire }}:</strong> {% if md.inspire %}Si{% else %}No{% endif %}</p>
+</div>
