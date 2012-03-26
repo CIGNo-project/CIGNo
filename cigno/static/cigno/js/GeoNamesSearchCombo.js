@@ -4,7 +4,6 @@ var app;
 var layer;
 var vectorLayer;
 var appendFeature;
-var mapPanel;
 var loadGeonamesPanel = function() {
     OpenLayers.ImgPath = '/static/geonode/externals/openlayers/img/';
     
@@ -95,7 +94,7 @@ var loadGeonamesPanel = function() {
 	rstore.insert(0, record);
 	selectControl.unselect(feature);
 	feature.appended=true;
-    }
+    };
 
     function onFeatureUnselect(feature) {
         //app.mapPanel.map.removePopup(feature.popup);

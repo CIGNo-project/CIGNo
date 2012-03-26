@@ -189,7 +189,7 @@ var graphWindow = new Ext.Window({
    ,layout: 'border'
 	      ,defaults: {
 		     //collapsible: true,
-		     split: true,
+		     split: true
 	      }
 	      ,items       : [{
 		     //xtype : 'box',
@@ -197,7 +197,7 @@ var graphWindow = new Ext.Window({
 		     name  : 'infovis-container',
 		     id    : 'infovis-container',
 		     layout: 'fit',
-		     html  : '<div id="infovis" style="width: 100%; height: 100%"></div>',
+		     html  : '<div id="infovis" style="width: 100%; height: 100%"></div>'
 		  },{
 		     //xtype : 'box',
 		     region: 'south',
@@ -206,9 +206,9 @@ var graphWindow = new Ext.Window({
 		     html  : '<h4 id="inner-title"></h4><div id="inner-details"></div>',
 		     height: 200,
 		     //cmargins: '5 0 0 0',
-		     autoScroll: true,
+		     autoScroll: true
 		     //bodyStyle: 'padding:15px'
-		  },
+		  }
 		                 ]
 });
 
@@ -367,7 +367,7 @@ Cigno.RelationsManager = Ext.extend(Ext.util.Observable, {
              },
              scope: this
             }]                     
-      })
+      });
    },
    buildGridPanel: function(){
       return new Ext.grid.GridPanel({
