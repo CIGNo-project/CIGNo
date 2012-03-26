@@ -9,6 +9,35 @@
 {{ block.super }}
 <script type="text/javascript" src="{{ STATIC_URL }}cigno/externals/slideshow/js/slideShow.js"></script>
     <style>
+    /* left buttons */
+    .search-button {
+        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/magnifier.png) !important;
+    }
+    .layer-upload-button {
+        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/add.png) !important;
+    }
+    .maps-button {
+        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/map.png) !important;
+    }
+
+    .menu-button button {
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #003C4C !important;
+    }
+
+    .menu-button td {
+        text-align: left !important;
+        padding: 0px !important;
+    }
+
+    .menu-button em {
+        padding: 3px !important;
+    }
+
+      
+
+
       * {margin: 0; padding:0; list-style: none;}
       
       /** 
@@ -66,8 +95,8 @@
 </style>
 
 <script type="text/javascript">
-Ext.onReady(function(){
 {% autoescape off %}
+Ext.onReady(function(){
 
       var slideShow = new lionSlideShow({
       applyTo: 'slideShow'
@@ -76,9 +105,56 @@ Ext.onReady(function(){
       , height: 378
       });
 
+  // button                                                                                                                                                                                                                                  
+   new Ext.Panel({
+      layout: {
+         type: 'vbox',
+         padding: '0'
+      },
+      //autoHeight: true,                                                                                                                                                                                                                    
+      height: 200,
+      defaultType: 'button',
+      baseCls: 'x-plain',
+      renderTo : 'left-button',
+      menu: undefined,
+      split: false,
+      flex: 1,
+      defaults: {
+         width: '260',
+         cls: 'menu-button',
+         scale: 'large',
+         margins: '5 0 5 0'
+      },
+      items:[{
+         text: 'Upload geospatial resource',
+         iconCls: 'layer-upload-button',
+         handler: function() {
+            window.location = '{% url geonode.maps.views.upload_layer %}';
+         }
+      },{
+         text: 'Upload digital resource',
+         iconCls: 'layer-upload-button',
+         handler: function() {
+            window.location = '{% url cigno.metadata.views.resource_metadata %}';
+         }
+      },{
+         text: 'View resources',
+         iconCls: 'search-button',
+         handler: function() {
+            window.location = '{% url geonode.maps.views.search_page %}';
+         }
+      },{
+         text: 'Create and view maps',
+         iconCls: 'maps-button',
+         handler: function() {
+            window.location = '{% url geonode.maps.views.maps %}';
+         }
+      }]
+   });
+});
+
 
 {% endautoescape %}
-});
 </script>
 {% endblock %}
 
@@ -137,14 +213,13 @@ Ext.onReady(function(){
 {% block sidebar %}
 <div class="threecol" style="text-align: center;">
   <h3>CIGNo Partners</h3>
-
-  <p><img src="{{ STATIC_URL }}cigno/img/logoCORILA_80.png"/></p>
-  <p><span class="explain">{% trans "Consortium for Coordination of Research Activities concerning the Venice Lagoon System" %}</span></p>
-  <hr/>
-  <p><img src="{{ STATIC_URL }}cigno/img/logoISMAR_100.png"/></p>
-  <p><span class="explain">{% trans "National Research Council - Institute of Marine Sciences" %}</span></p>
-  <hr/>
-  <p><img  src="{{ STATIC_URL }}cigno/img/logoVenezia.png"/></p>
-  <p><span class="explain">{% trans "City of Venice" %}</span></p>
+  <p>
+    <a href="http://www.ismar.cnr.it/" target="_blank"><img src="{{ STATIC_URL }}cigno/img/logoISMAR_100.png" style="height: 70px; margin: 0 13px 0 13px;"/></a>
+    <a href="http://www.corila.it/" target="_blank"><img src="{{ STATIC_URL }}cigno/img/logoCORILA_80.png" style="height: 60px; margin: 0 13px 0 13px;"/></a>
+    <a href="http://www.comune.venezia.it/" target="_blank"><img  src="{{ STATIC_URL }}cigno/img/logoVenezia.png" style="height: 70px; margin: 0 13px 0 13px;"/></a>
+  </p>
+  <br/>
+  <div id="left-button">
+  </div>
 </div>
 {% endblock %}
