@@ -12,3 +12,4 @@ poster
 # mv elfinder-1.1/{css,images,js} elfinder
 django-admin-tools
 django-extensions
+django-piston

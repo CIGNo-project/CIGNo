@@ -41,6 +41,7 @@ class OnlineResourceInline(admin.TabularInline):
 class TemporalExtentInline(admin.TabularInline):
     model = TemporalExtent
     classes = ('collapse closed',)
+    extra = 1
 
 class ResourceTemporalExtentInline(admin.TabularInline):
     model = ResourceTemporalExtent
@@ -49,38 +50,46 @@ class ResourceTemporalExtentInline(admin.TabularInline):
 class ReferenceDateInline(admin.TabularInline):
     model = ReferenceDate
     classes = ('collapse closed',)
+    extra = 1
 
 class ResourceReferenceDateInline(admin.TabularInline):
     model = ResourceReferenceDate
     classes = ('collapse closed',)
+    extra = 1
 
 class ConformityInline(admin.TabularInline):
     model = Conformity
     classes = ('collapse closed',)
+    extra = 1
 
 class ResourceConformityInline(admin.TabularInline):
     model = ResourceConformity
     classes = ('collapse closed',)
+    extra = 1
 
 class ResponsiblePartyRoleInline(admin.TabularInline):
     model = ResponsiblePartyRole
     classes = ('collapse closed',)
+    extra = 1
 
 class ResourceResponsiblePartyRoleInline(admin.TabularInline):
     model = ResourceResponsiblePartyRole
     classes = ('collapse closed',)
+    extra = 1
 
 class MdResponsiblePartyRoleInline(admin.TabularInline):
     model = MdResponsiblePartyRole
     #exclude = ('role',)
     readonly_fields = ('role',)
     classes = ('collapse closed',)
+    extra = 1
 
 class ResourceMdResponsiblePartyRoleInline(admin.TabularInline):
     model = ResourceMdResponsiblePartyRole
     #exclude = ('role',)
     readonly_fields = ('role',)
     classes = ('collapse closed',)
+    extra = 1
 
 class BaseCodeAdmin(TranslationAdmin):
     list_editable = ['label',]
@@ -392,6 +401,7 @@ admin.site.register(CodeRefSys, CodeRefSysAdmin)
 admin.site.register(CodeCharacterSet, BaseCodeIsoAdmin)
 admin.site.register(CodeVerticalDatum, BaseCodeAdmin)
 admin.site.register(CodeMaintenanceFrequency, BaseCodeIsoAdmin)
+admin.site.register(CodeSampleFrequency, BaseCodeIsoAdmin)
 admin.site.register(CodeRestriction, BaseCodeIsoAdmin)
 admin.site.register(CodeClassification, BaseCodeIsoAdmin)
 admin.site.register(CodeTitle, BaseCodeAdmin)
@@ -406,4 +416,10 @@ admin.site.register(Resource, ResourceAdmin)
 
 
 
+class ConnectionTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'url', 'label', 'code', 'inverse')
+    list_editable = ('url', 'label', 'code', 'inverse')
+    pass
+admin.site.register(ConnectionType, ConnectionTypeAdmin)
+admin.site.register(Connection)
 

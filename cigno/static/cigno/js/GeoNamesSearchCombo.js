@@ -1,315 +1,118 @@
-/**
- * Copyright (c) 2008-2009 The Open Source Geospatial Foundation
- *
- * Published under the BSD license.
- * See http://svn.geoext.org/core/trunk/geoext/license.txt for the full text
- * of the license.
- */
+var mapPanel;
 
-/** api: (define)
- *  module = GeoExt.ux
- *  class = GeoNamesSearchCombo
- *  base_link = `Ext.form.ComboBox <http://dev.sencha.com/deploy/dev/docs/?class=Ext.form.ComboBox>`_
- */
-
-Ext.namespace("GeoExt.ux");
-
-GeoExt.ux.GeoNamesSearchCombo = Ext.extend(Ext.form.ComboBox, {
-    /** api: config[map]
-     *  ``OpenLayers.Map or Object``  A configured map or a configuration object
-     *  for the map constructor, required only if :attr:`zoom` is set to
-     *  value greater than or equal to 0.
-     */
-    /** private: property[map]
-     *  ``OpenLayers.Map``  The map object.
-     */
-    map: null,
-
-    /** api: config[width]
-     *  See http://www.dev.sencha.com/deploy/dev/docs/source/BoxComponent.html#cfg-Ext.BoxComponent-width,
-     *  default value is 350.
-     */
-    width: 350,
-
-    /** api: config[listWidth]
-     *  See http://www.dev.sencha.com/deploy/dev/docs/source/Combo.html#cfg-Ext.form.ComboBox-listWidth,
-     *  default value is 350.
-     */
-    listWidth: 350,
-
-    /** api: config[loadingText]
-     *  See http://www.dev.sencha.com/deploy/dev/docs/source/Combo.html#cfg-Ext.form.ComboBox-loadingText,
-     *  default value is "Search in Geonames...".
-     */
-    loadingText: 'Search in Geonames...',
-
-    /** api: config[emptyText]
-     *  See http://www.dev.sencha.com/deploy/dev/docs/source/TextField.html#cfg-Ext.form.TextField-emptyText,
-     *  default value is "Search location in Geonames".
-     */
-    emptyText: 'Search location in Geonames',
-
-    /** api: config[zoom]
-     *  ``Number`` Zoom level for recentering the map after search, if set to
-     *  a negative number the map isn't recentered, defaults to 8.
-     */
-    /** private: property[zoom]
-     *  ``Number``
-     */
-    zoom: 8,
-
-    /** api: config[minChars]
-     *  ``Number`` Minimum number of characters to be typed before
-     *  search occurs, defaults to 1.
-     */
-    minChars: 1,
-
-    /** api: config[queryDelay]
-     *  ``Number`` Delay before the search occurs, defaults to 50 ms.
-     */
-    queryDelay: 50,
-
-    /** api: config[maxRows]
-     *  `String` The maximum number of rows in the responses, defaults to 20,
-     *  maximum allowed value is 1000.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[maxRows]
-     *  ``String``
-     */
-    maxRows: '20',
-
-    /** api: config[tpl]
-     *  ``Ext.XTemplate or String`` Template for presenting the result in the
-     *  list (see http://www.dev.sencha.com/deploy/dev/docs/output/Ext.XTemplate.html),
-     *  if not set a default value is provided.
-     */
-    tpl: '<tpl for="."><div class="x-combo-list-item"><h1>{name}<br></h1>{fcodeName} - {countryName}</div></tpl>',
-
-    /** api: config[lang]
-     *  ``String`` Place name and country name will be returned in the specified
-     *  language. Default is English (en). See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[lang]
-     *  ``String``
-     */
-    lang: 'en',
-
-    /** api: config[countryString]
-     *  ``String`` Country in which to make a GeoNames search, default is all countries.
-     *  Providing several countries can be done like: countryString: country=FR&country=GP
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[countryString]
-     *  ``String``
-     */
-    countryString: '',
-
-    /** api: config[continentCode]
-     *  ``String`` Restricts the search for toponym of the given continent,
-     *  default is all continents.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[continentCode]
-     *  ``String``
-     */
-    continentCode: '',
+var app;
+var layer;
+var vectorLayer;
+var appendFeature;
+var mapPanel;
+var loadGeonamesPanel = function() {
+    OpenLayers.ImgPath = '/static/geonode/externals/openlayers/img/';
     
-    /** api: config[adminCode1]
-     *  ``String`` Code of administrative subdivision, default is all
-     *  administrative subdivisions.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[adminCode1]
-     *  ``String``
-     */
-    adminCode1: '',
 
-    /** api: config[adminCode2]
-     *  ``String`` Code of administrative subdivision, default is all administrative
-     *  subdivisions.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[adminCode2]
-     *  ``String``
-     */
-    adminCode2: '',
+    vectorLayer = new OpenLayers.Layer.Vector("Search");
+    // app = new gxp.Viewer(config);
+    mapPanel = new GeoExt.MapPanel({
+	id: 'mappanel',
+	width: 270,
+	height: 270,
+	renderTo: 'preview_map',
+	border: true,
+	map: {//theme: null,
+	    "units": "m", 
+	    "maxResolution": 156543.03390625, 
+	    //"maxExtent": [-20037508.34, -20037508.34, 20037508.34, 20037508.34], 
+	    "projection": "EPSG:900913",
+	    controls: [new OpenLayers.Control.Navigation()
+		      ],
+	    layers: [
+		new OpenLayers.Layer.OSM(),
+		vectorLayer
+	    ]
+	}
+    });
+    mapPanel.map.setCenter(new OpenLayers.LonLat(1372198, 5690838));
+    mapPanel.map.zoomTo(8);
 
-    /** api: config[adminCode3]
-     *  ``String`` Code of administrative subdivision, default is all administrative
-     *  subdivisions.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[adminCode3]
-     *  ``String``
-     */
-    adminCode3: '',
+    var selectControl;
+    var selectedFeature;
+    new GeoExt.ux.GeoNamesSearchCombo({
+        //map: app.mapPanel.map,
+	map: mapPanel.map,
+        layerName: 'Search',
+	zoom: 12,
+	renderTo: 'geonames_search',
+	width: 270
+    });
 
-    /** api: config[featureClassString]
-     *  ``String`` Feature classes in which to make a GeoNames search, default is all
-     *  feature classes.
-     *  Providing several feature classes can be done with
-     *  ``featureClassString: "featureClass=P&featureClass=A"``
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[featureClassString]
-     *  ``String``
-     */
-    featureClassString: '',
-
-    /** api: config[featureCodeString]
-     *  ``String`` Feature code in which to make a GeoNames search, default is all
-     *  feature codes.
-     *  Providing several feature codes can be done with
-     *  ``featureCodeString: "featureCode=PPLC&featureCode=PPLX"``
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[featureCodeString]
-     *  ``String``
-     */
-    featureCodeString: '',
-
-    /** api: config[tag]
-     *  ``String`` Search for toponyms tagged with the specified tag, default
-     *  is all tags.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[tag]
-     *  ``String``
-     */
-    tag: '',
-
-    /** api: config[charset]
-     *  `String` Defines the encoding used for the document returned by
-     *  the web service, defaults to 'UTF8'.
-     *  See: http://www.geonames.org/export/geonames-search.html
-     */
-    /** private: property[charset]
-     *  ``String``
-     */
-    charset: 'UTF8',
-
-    /** private: property[hideTrigger]
-     *  Hide trigger of the combo.
-     */
-    hideTrigger: true,
-
-    /** private: property[displayField]
-     *  Display field name
-     */
-    displayField: 'name',
-
-    /** private: property[forceSelection]
-     *  Force selection.
-     */
-    forceSelection: true,
-
-    /** private: property[queryParam]
-     *  Query parameter.
-     */
-    queryParam: 'name_startsWith',
-
-    /** private: property[url]
-     *  Url of the GeoNames service: http://www.GeoNames.org/export/GeoNames-search.html
-     */
-    url: 'http://ws.geonames.org/searchJSON?',
-
-    /** private: constructor
-     */
-    initComponent: function() {
-        GeoExt.ux.GeoNamesSearchCombo.superclass.initComponent.apply(this, arguments);
-
-        var urlAppendString = '';
-
-        if (this.countryString.length > 0) {
-            urlAppendString = urlAppendString + this.countryString;      
-        }
-
-        if (this.featureClassString.length > 0) {
-            urlAppendString = urlAppendString + this.featureClassString;
-        }
-
-        if (this.featureCodeString.length > 0) {
-            urlAppendString = urlAppendString + this.featureCodeString;
-        }
-        
-        this.store = new Ext.data.Store({
-            proxy: new Ext.data.ScriptTagProxy({
-                url: this.url + urlAppendString,
-                method: 'GET'
-            }),
-            baseParams: {
-                maxRows: this.maxRows,
-                lang: this.lang,
-                continentCode: this.continentCode,
-                adminCode1: this.adminCode1,
-                adminCode2: this.adminCode2,
-                adminCode3: this.adminCode3,
-                tag: this.tag,
-                charset: this.charset
-            },
-            reader: new Ext.data.JsonReader({
-                idProperty: 'geonameId',
-                root: "geonames",
-                totalProperty: "totalResultsCount",
-                fields: [
-                    {
-                        name: 'geonameId'
-                    },
-                    {
-                        name: 'countryName'
-                    },
-                    {
-                        name: 'lng'
-                    },
-                    {
-                        name: 'lat'
-                    },
-                    {
-                        name: 'name'
-                    },
-                    {
-                        name: 'fcodeName'
-                    },
-                    {
-                        name: 'adminCode1'
-                    },
-                    {
-                        name: 'fclName'
-                    },
-                    {
-                        name: 'countryCode'
-                    },
-                    {
-                        name: 'fcl'
-                    },
-                    {
-                        name: 'fcode'
-                    },
-                    {
-                        name: 'population'
-                    },
-                    {
-                        name: 'adminName1'
-                    }
-                ]
-            })
-        });
-
-        if(this.zoom > 0) {
-            this.on("select", function(combo, record, index) {
-                var position = new OpenLayers.LonLat(
-                    record.data.lng, record.data.lat
-                );
-                position.transform(
-                    new OpenLayers.Projection("EPSG:4326"),
-                    this.map.getProjectionObject()
-                );
-                this.map.setCenter(position, this.zoom);
-            }, this);
-        }
+    function onPopupClose(evt) {
+        selectControl.unselect(selectedFeature);
     }
-});
+    function onFeatureSelect(feature) {
+        selectedFeature = feature;
+	//console.log(feature);
+	var appendFeature = "<br><a src='javascript:void(0)' onClick=\"appendFeature('" + feature.id + "\')\">Add relation</a>";
+	if(feature.appended){
+	    appendFeature = '';
+	}
+        popup = new OpenLayers.Popup.FramedCloud("chicken", 
+						 feature.geometry.getBounds().getCenterLonLat(),
+						 null,
+						 //"<div style='font-size:.8em'>" + feature.data.name +"<br>" + feature.data.fcodeName+"</div>",
+						 "<div class='text-align: left'>"
+						 + "<b>" + feature.data.name + "</b>" 
+						 + "<small>"
+						 + "<br/>" + feature.data.fcodeName + "-" + feature.data.countryName
+						 + appendFeature
+						 + "</div>",
+						 null, true, onPopupClose);
+        feature.popup = popup;
+        //app.mapPanel.map.addPopup(popup);
+	mapPanel.map.addPopup(popup);
+    }
+    
+    appendFeature = function(id){
+	var baseUrl = 'http://sws.geonames.org/';
+	//var searchLayer = app.mapPanel.map.getLayersByName('Search')[0];
+	var searchLayer = mapPanel.map.getLayersByName('Search')[0];
+	var feature = searchLayer.getFeatureById(id);
+	feature.style.externalGraphic = "/static/geonode/externals/openlayers/img/marker-blue.png";
+	searchLayer.redraw();
+	rstore = related_resources_panel.store;
+	var s = related_resources_panel.rdf_s;
+	var p = 'http://purl.org/dc/terms/coverage';
+	var o = baseUrl + feature.data.geonameId +'/';
+	var pl = 'Coverage';
+	var ol = feature.data.name;
 
-/** api: xtype = gxux_geonamessearchcombo */
-Ext.reg('gxux_geonamessearchcombo', GeoExt.ux.GeoNamesSearchCombo);
+	record = new rstore.recordType({
+	    'id': s + '|' + p + '|' + o,
+	    's': s,
+	    'p': p,
+	    'o': o,
+	    'pl': pl,
+	    'ol': ol
+	});
+	rstore.insert(0, record);
+	selectControl.unselect(feature);
+	feature.appended=true;
+    }
+
+    function onFeatureUnselect(feature) {
+        //app.mapPanel.map.removePopup(feature.popup);
+	mapPanel.map.removePopup(feature.popup);
+        feature.popup.destroy();
+        feature.popup = null;
+    } 
+    
+    // create popup on "featureselected"
+    //app.on("ready", 
+    //function(e){
+    vectorLayer = mapPanel.map.getLayersByName('Search')[0];
+    selectControl = new OpenLayers.Control.SelectFeature(vectorLayer,
+							 {onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
+    vectorLayer.onFeatureInsert = onFeatureSelect;
+    mapPanel.map.addControl(selectControl);
+    selectControl.activate();
+    //       }, mapPanel
+    // );
+};

@@ -443,11 +443,12 @@ Cigno.RelationsManager = Ext.extend(Ext.util.Observable, {
       this.container = new Ext.Panel({
          renderTo: this.renderTo,
          width:  270,
+	 //height: 300,
          autoHeight: true,
-         layout: 'fit',
+         layout: 'form',
          items: [
             {  
-               border: false,
+		border: false,
                items: [
                   this.treePanel,
                   this.availableRelations, 

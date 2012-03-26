@@ -27,7 +27,7 @@ import httplib2
 import surf
 import re
 from string import lower
-from cigno.mdtools.views_rdf import CignoRDF
+from cigno.mdtools.views_rdf import CignoRDF, lbyl
 from django.contrib.auth.models import User, Permission
 from geonode.core.models import PermissionLevelMixin
 from django.core.exceptions import ValidationError
@@ -45,6 +45,17 @@ import logging
 from django_extensions.db.fields import json
 
 logger = logging.getLogger("geonode.metadata.models")
+
+
+ALL_LICENSES =[
+    'ISMAR Data license',
+    'CC Attribution (by)',
+    'CC Attribution + NoDerivatives (by-nd)',
+    'CC Attribution + ShareAlike (by-sa)',
+    'CC Attribution + Noncommercial (by-nc)',
+    'CC Attribution + Noncommercial + NoDerivatives (by-nc-nd)',
+    'CC Attribution + Noncommercial + ShareAlike (by-nc-sa)'
+    ]
 
 
 ALL_LANGUAGES = (
@@ -174,6 +185,16 @@ class CodeMaintenanceFrequency(models.Model):
     def __unicode__(self):
         return u'%s' % self.label
 
+class CodeSampleFrequency(models.Model):
+    label            = models.CharField(_(u'sample frequency'), max_length=255)
+    isoid            = models.CharField(_('ISO identifier'), max_length=100)
+    class Meta:
+         verbose_name = _(u"Sample frequency")
+         verbose_name_plural = _(u"Sample frequencies")
+
+    def __unicode__(self):
+        return u'%s' % self.label
+
 class CodeRestriction(models.Model):
     label            = models.CharField(_(u'code restriction'), max_length=255)
     isoid            = models.CharField(_('ISO identifier'), max_length=100)
@@ -287,7 +308,8 @@ class Inspire(models.Model):
 
     ## section
     # TODO: use layer permission
-    use_limitation          = models.TextField(_(u'use limitation'), null=True, blank=True)
+    #use_limitation          = models.TextField(_(u'use limitation'), null=True, blank=True)
+    use_limitation          = models.CharField(_(u'use limitation'), max_length=300, choices=[(i,i) for i in ALL_LICENSES],  null=True, blank=True)
     access_constraints      = models.ForeignKey(CodeRestriction, verbose_name=_('access constraints'), null=True, blank=True, related_name='%(app_label)s_%(class)s_access_constraints')
     use_constraints        = models.ForeignKey(CodeRestriction, verbose_name=_('use constraints'), null=True, blank=True, related_name='%(app_label)s_%(class)s_user_constraints')
     other_constraints       = models.TextField(_(u'other constraints'), max_length=50, null=True, blank=True)
@@ -309,8 +331,61 @@ class Inspire(models.Model):
     md_standard_name         = models.CharField(_('metadata standard name'), max_length=100, default='ISO19115')
     md_version_name          = models.CharField(_('metadata version name'), max_length=100, default='2003')
 
+    # geonames
+    geonamesids       = models.TextField(null=True, blank=True)
+
     class Meta:
         abstract = True
+
+    @property
+    def field_labels(self):
+        d = {}
+        for field in self._meta.fields:
+            d[field.name] = field.verbose_name.capitalize()
+        for field in self._meta.many_to_many:
+            d[field.name] = field.verbose_name.capitalize()
+        for rel in self._meta.get_all_related_objects():
+            d[rel.model._meta.module_name] = unicode(rel.model._meta.verbose_name).capitalize()
+        return d
+
+    def geonamesGeoJson(self):
+        crdf = CignoRDF()
+        features= { "type": "FeatureCollection", "features": []}
+        geonamesids = []
+        if len(geonamesids) > 0:
+            geonamesids = self.geonamesids.split(',')
+        for id in geonamesids:
+            gn = crdf.GeoNames('http://sws.geonames.org/%s/' % id)
+            gn.load()
+            long = gn.geo_long[0]
+            lat = gn.geo_lat[0]
+            feature = {
+                'type': "Feature",
+                'geometry':  {"type": "Point", "coordinates": [long,  lat]},
+                'properties': {
+                    'type': 'link',
+                    'geonameId': id,
+                    'name': lbyl(gn.gn_name),
+                    'fcodeName': lbyl(gn.gn_featureCode[0].skos_prefLabel),
+                    'countryName': 'Italy'
+                    } 
+                }
+            features['features'].append(feature)
+        return features
+
+    def syncGeonames(self):
+        Connection.objects.filter(s_url = self.get_public_url()).delete()
+        connection_type = ConnectionType.objects.get(url = surf.ns.DCTERMS['spatial'])
+        
+        if self.geonamesids is not None:
+            for id in self.geonamesids.split(','):
+                if id is not None and id.strip() != '':
+                    connection = Connection(s_url = self.get_public_url(), o_url = surf.ns.GNFEATURES['%s/' % id], connection_type = connection_type )
+                    connection.save()
+
+    def get_public_url(self):
+        return surf.ns.LOCAL[self.get_absolute_url()]
+
 
     def keywords_list(self):
         if self.gemetkeywords is not None and self.gemetkeywords != '':
@@ -367,7 +442,9 @@ class ResourceManager(models.Manager):
     #     return self.geonetwork
 
 
+RESOURCE_TYPE = (('local', 'Local resource'), ('remote', 'Remote resource'), ('metadata', 'Metadata only'))
 class Resource(Inspire, PermissionLevelMixin):
+    type                   = models.CharField(max_length=50, choices = RESOURCE_TYPE)
     name                   = models.CharField(max_length=128)
     uuid                   = models.CharField(_('unique resource identifier'), max_length=36, default = create_uuid)
     language               = models.CharField(_('language'), max_length=3, choices=ALL_LANGUAGES, default='ita', blank=True)
@@ -377,8 +454,9 @@ class Resource(Inspire, PermissionLevelMixin):
     mimetype               = models.CharField(_('mimetype'), max_length=255, blank=True)
     md_creation            = models.DateTimeField(_('Metadata creation'), auto_now_add=True)
     md_last_modify         = models.DateTimeField(_('Metadata last modify'), auto_now=True)
-    responsible_party_role  = models.ManyToManyField(ResponsibleParty, through='ResourceResponsiblePartyRole', verbose_name=_(u'responsible party - resource'), related_name="resource_responsible_party_role", null=True, blank=True)
-    md_responsible_party_role  = models.ManyToManyField(ResponsibleParty, through='ResourceMdResponsiblePartyRole', verbose_name=_(u'responsible party - metadata'), related_name="resource_md_responsible_party_role", null=True, blank=True)
+    geographic_bounding_box= models.TextField(_('geographic bounding box'), blank=True, null=True)
+    responsible_party_role  = models.ManyToManyField(ResponsibleParty, through='ResourceResponsiblePartyRole', verbose_name=_(u'responsible party - resource'), related_name="responsible_party_role", null=True, blank=True)
+    md_responsible_party_role  = models.ManyToManyField(ResponsibleParty, through='ResourceMdResponsiblePartyRole', verbose_name=_(u'responsible party - metadata'), related_name="md_responsible_party_role", null=True, blank=True)
     topic_category = models.CharField(_('topic_category'), max_length=255, choices = [(x, x) for x in TOPIC_CATEGORIES], default = 'location')
     objects                = ResourceManager()
 
@@ -396,7 +474,7 @@ class Resource(Inspire, PermissionLevelMixin):
 
     @property
     def thumbnail_exists(self):
-        if self.base_file.url != '':
+        if self.base_file and self.base_file.url != '':
             filename = os.path.basename(self.base_file.name)
             return urljoin(self.base_file.url, "resized/%s.png" % filename)
         return None
@@ -463,8 +541,9 @@ class Resource(Inspire, PermissionLevelMixin):
             for k,v in self.extract_metadata:
                 if k=='mimetype':
                     self.mimetype = v
-        if not self.url_field and not self.base_file:
-            raise ValidationError('Insert a URL or a file')
+        # remove to allow "metadata only" mode
+        # if not self.url_field and not self.base_file:
+        #    raise ValidationError('Insert a URL or a file')
 
 
     class Meta:
@@ -526,7 +605,7 @@ def post_save_resource(instance, sender, **kwargs):
     instance.save_to_geonetwork()
 
     # save CignoResources in RDF
-    resource_uri = surf.ns.LOCAL[instance.get_absolute_url()]
+    resource_uri = instance.get_public_url()
     crdf = CignoRDF()
     if instance.gemetkeywords is not None and instance.gemetkeywords != '':
         gemetkeywords = json.loads(instance.gemetkeywords)
@@ -537,6 +616,8 @@ def post_save_resource(instance, sender, **kwargs):
                                instance.mldict('titleml'),
                                gemetkeywords
                                )
+    instance.syncGeonames()
+
 
 signals.post_save.connect(post_save_resource, sender=Resource)
 
@@ -544,7 +625,7 @@ def post_delete_resource(instance, sender, **kwargs):
     instance.delete_from_geonetwork()
     
     crdf = CignoRDF()
-    crdf.remove(surf.ns.LOCAL[instance.get_absolute_url()])
+    crdf.remove(instance.get_public_url())
 
 signals.post_delete.connect(post_delete_resource, sender=Resource)
 
@@ -577,7 +658,6 @@ class LayerExt(Layer, Inspire):
         layer = Layer.objects.get(uuid=self.uuid)
         return layer.get_absolute_url()
 
- 
     def get_edit_url(self):
         return reverse('admin:%s_%s_change' %(self._meta.app_label,  self._meta.module_name),  args=[self.pk] )
 
@@ -645,17 +725,6 @@ class LayerExt(Layer, Inspire):
         return '<span class="progress-meter" style="display: block; height: 10px; width: 75px; border: 1px solid black"><span class="has-progress" style="display: block; background-color: #0000ff; width: %s%%; height: 100%%"></span></span> %s%%' % (self.metadata_completeness(),self.metadata_completeness())
     completeness_bar.allow_tags = True
 
-
-    @property
-    def field_labels(self):
-        d = {}
-        for field in self._meta.fields:
-            d[field.name] = field.verbose_name.capitalize()
-        for field in self._meta.many_to_many:
-            d[field.name] = field.verbose_name.capitalize()
-        for rel in self._meta.get_all_related_objects():
-            d[rel.model._meta.module_name] = unicode(rel.model._meta.verbose_name).capitalize()
-        return d
 
     # def _populate_from_resource(self, resource):
     #     self.supplemental_information = resource.supplemental_information
@@ -727,7 +796,7 @@ signals.post_save.connect(post_save_layer, sender=Layer)
 
 def post_delete_layerext(instance, sender, **kwargs):
     crdf = CignoRDF()
-    crdf.remove(surf.ns.LOCAL[instance.get_absolute_url()])
+    crdf.remove(instance.get_public_url())
 signals.post_delete.connect(post_delete_layerext, sender=LayerExt)
 
 
@@ -744,7 +813,7 @@ def post_save_layerext(instance, sender, **kwargs):
         instance.layer_ptr.save()
 
     # save CignoResources in RDF
-    resource_uri = surf.ns.LOCAL[instance.get_absolute_url()]
+    resource_uri = instance.get_public_url()
     crdf = CignoRDF()
     if instance.gemetkeywords is not None and instance.gemetkeywords != '':
         gemetkeywords = json.loads(instance.gemetkeywords)
@@ -780,11 +849,15 @@ class OnlineResource(models.Model):
 #    ('revision', 'Revisione')
 #    ]
 
+def get_default_sample_frequency_uom():
+    return CodeSampleFrequency.objects.get(isoid='unique')
+
 class TemporalExtent(models.Model):
     metadata               = models.ForeignKey(LayerExt)
     temporal_extent_begin  = models.DateField(verbose_name=_('temporal extent - starting date'),blank=True, null=True)
     temporal_extent_end    = models.DateField(verbose_name=_('temporal extent - ending date'),blank=True, null=True)
-
+    sample_frequency_uom   = models.ForeignKey(CodeSampleFrequency, verbose_name=_('sample frequency - unit of measure'), null=True, blank=True,)# default=get_default_sample_frequency_uom())
+    sample_frequency_value = models.IntegerField(verbose_name=_('sample frequency - value'), null=True, blank=True)
     def __unicode__(self):
         return u'%s  %s' % (self.temporal_extent_begin, self.temporal_extent_begin)
 
@@ -792,10 +865,11 @@ class TemporalExtent(models.Model):
          verbose_name_plural = _(u"Temporal extent")
 
 class ResourceTemporalExtent(models.Model):
-    metadata               = models.ForeignKey(Resource)
+    metadata               = models.ForeignKey(Resource, related_name='temporalextent_set')
     temporal_extent_begin  = models.DateField(verbose_name=_('temporal extent - starting date'),blank=True, null=True)
     temporal_extent_end    = models.DateField(verbose_name=_('temporal extent - ending date'),blank=True, null=True)
-
+    sample_frequency_value = models.IntegerField(verbose_name=_('maintenance frequency'), null=True, blank=True)
+    sample_frequency_uom   = models.ForeignKey(CodeSampleFrequency, verbose_name=_('sample frequency'), null=True, blank=True,)# default=get_default_sample_frequency_uom())
     def __unicode__(self):
         return u'%s  %s' % (self.temporal_extent_begin, self.temporal_extent_begin)
 
@@ -814,7 +888,7 @@ class ReferenceDate(models.Model):
          verbose_name_plural = _(u"Reference dates")
 
 class ResourceReferenceDate(models.Model):
-    metadata               = models.ForeignKey(Resource)
+    metadata               = models.ForeignKey(Resource, related_name='referencedate_set')
     date                   = models.DateField(blank=True, null=True)
     date_type               = models.ForeignKey(CodeDateType, verbose_name=_('date type'))
     def __unicode__(self):
@@ -835,7 +909,7 @@ class Conformity(models.Model):
          verbose_name_plural = _(u"Conformity")
 
 class ResourceConformity(models.Model):
-    metadata              = models.ForeignKey(Resource)
+    metadata              = models.ForeignKey(Resource, related_name='conformity_set')
     title                 = models.CharField(_('title'), max_length=255)
     date                  = models.DateField(blank=True, null=True)
     date_type             = models.ForeignKey(CodeDateType, verbose_name=_('date type'))
@@ -880,7 +954,7 @@ class MdResponsiblePartyRole(models.Model):
 
 class ResourceResponsiblePartyRole(models.Model):
     responsible_party = models.ForeignKey(ResponsibleParty)
-    metadata = models.ForeignKey(Resource)
+    metadata = models.ForeignKey(Resource, related_name='responsiblepartyrole_set')
     role = models.ForeignKey(CodeRole)
     class Meta:
          verbose_name_plural = _(u"Responsible party role")
@@ -889,7 +963,7 @@ class ResourceResponsiblePartyRole(models.Model):
 
 class ResourceMdResponsiblePartyRole(models.Model):
     responsible_party = models.ForeignKey(ResponsibleParty)
-    metadata = models.ForeignKey(Resource)
+    metadata = models.ForeignKey(Resource, related_name='mdresponsiblepartyrole_set')
     role = models.ForeignKey(CodeRole, limit_choices_to = {'isoid': 'author'}, default=get_default_author)
     class Meta:
          verbose_name_plural = _(u"Responsible party role (metadata)")
@@ -897,63 +971,26 @@ class ResourceMdResponsiblePartyRole(models.Model):
         return "%s (%s)" % (self.responsible_party, self.role)
 
 
-# class ResponsabileDatiRuolo(models.Model):
-#     anagrafica = models.ForeignKey(Anagrafica)
-#     metadata = models.ForeignKey(LayerExt)
-#     ruolo = models.ForeignKey(Ruolo)
-
-#     class Meta:
-#          verbose_name_plural = _(u"Responsabili dati - ruoli")
-#     def __unicode__(self):
-#         return "%s (%s)" % (self.anagrafica, self.ruolo)
- 
-# class PuntoContattoRuolo(models.Model):
-#     anagrafica = models.ForeignKey(Anagrafica)
-#     metadata = models.ForeignKey(LayerExt)
-#     ruolo = models.ForeignKey(Ruolo)
-
-#     class Meta:
-#          verbose_name_plural = _(u"Punti contatto - ruoli")
-#     def __unicode__(self):
-#         return "%s (%s)" % (self.anagrafica, self.ruolo)
-
-# class DistributoreRuolo(models.Model):
-#     anagrafica = models.ForeignKey(Anagrafica)
-#     metadata = models.ForeignKey(LayerExt)
-#     ruolo = models.ForeignKey(Ruolo)
-
-#     class Meta:
-#          verbose_name_plural = _(u"Distributori - ruoli")
-#     def __unicode__(self):
-#         return "%s (%s)" % (self.anagrafica, self.ruolo)
+class ConnectionType(models.Model):
+    url              = models.URLField(verify_exists=False, max_length=500)
+    label            = models.CharField(_('relation'), max_length=255)
+    code             = models.CharField(_('relation code'), max_length=100)
+    inverse          = models.ForeignKey('self', verbose_name=_('inverse'), null=True, blank=True)
+    def __unicode__(self):
+        return u"%s" % self.label
 
 
-# class ResponsabileMdRuolo(models.Model):
-#     anagrafica = models.ForeignKey(Anagrafica)
-#     metadata = models.ForeignKey(LayerExt)
-#     ruolo = models.ForeignKey(Ruolo)
+class Connection(models.Model):
+    s_url            = models.URLField(verify_exists=False, max_length=500)
+    o_url            = models.URLField(verify_exists=False, max_length=500)
+    connection_type  = models.ForeignKey(ConnectionType)
 
-#     class Meta:
-#          verbose_name_plural = _(u"Responsabile metadati - ruoli")
-#     def __unicode__(self):
-#         return "%s (%s)" % (self.anagrafica, self.ruolo)
+def post_save_connection(instance, sender, **kwargs):    
+    crdf = CignoRDF()
+    # if external try to load rdf info
+    # TODO: use a better test and test if already loaded
+    if not instance.s_url.startswith(surf.ns.LOCAL):
+      crdf.store.load_triples(source = instance.s_url)
+    crdf.add_triple(instance.s_url, instance.connection_type.url, instance.o_url)
 
-# class Allegato(models.Model):
-#     metadata = models.ForeignKey(LayerExt)
-#     #allegato = FileBrowseField(_("allegato"), max_length=200, blank=True, null=True)
-#     allegato = models.FileField(_("allegato"), upload_to = 'metadata/allegati/%Y', max_length=200, blank=True, null=True)
-#     descrizione = models.CharField(_('descrizione'), max_length=255, blank=True, null=True)
-#     class Meta:
-#          verbose_name_plural = _(u"Allegati")
-
-
-# class Geometria(models.Model):
-#     metadata = models.ForeignKey(LayerExt)
-#     geo = models.GeometryField()
-
-#     objects = models.GeoManager()
-
-#     class Meta:
-#          verbose_name_plural = _(u"Geometrie")
-    
-
+signals.post_save.connect(post_save_connection, sender=Connection)

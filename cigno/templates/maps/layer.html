@@ -195,26 +195,6 @@
     <script type="text/javascript">
 {% autoescape off %}
 Ext.onReady(function() {
-   var tabs = new Ext.TabPanel({
-      defaults:   {autoScroll:true, autoHeight:true},
-      autoHeight: true,
-      //boxMinWidth: 100,
-      renderTo: 'tabs-container',
-      activeTab: 0,
-      padding: 10,    
-      items:[
-         {contentEl:'identification', title:'Identification'},
-         {contentEl:'respparty', title:'{% trans "Resp. party" %}'},
-         {contentEl:'classification', title:'{% trans "Classification" %}'},
-         {contentEl:'geoext', title:'{% trans "Geo" %}'},
-         {contentEl:'tempext', title:'{% trans "Temporal" %}'},
-         {contentEl:'quality', title:'{% trans "Quality" %}'},
-         {contentEl:'constraints', title:'{% trans "Constraints" %}'},
-         {contentEl:'metametadata', title:'{% trans "Metadata" %}'},
-      ]
-   });
-   
-
    var related_resources_panel = new Cigno.RelationsManager({
       renderTo:'related_resources-manager',
       rdf_url: '{% url cigno.mdtools.views_rdf.graph_connections %}',
@@ -337,11 +317,11 @@ Ext.onReady(function() {
     font-size: 90%;
     display: block;
     color: #999999;
-  }
+}
 </style>
 {% with layer.layerext.field_labels as fl %}{% with layer.layerext as md %}
 <div id="description"> <h3> {{ layer.layerext.titleml|default:layer.typename }} </h3> </div>
-{%if md.source_document %}
+{% if md.source_document %}
 <p id="data_ops">
 <span class="export">{% trans "Download resource" %}:</span>
 <a href="{{md.source_document.url}}">({% trans "Download" %})</a>
@@ -351,105 +331,8 @@ Ext.onReady(function() {
 <p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|truncatewords:30|default:_("No abstract for this layer.") }} </p>
 
 <div id="preview_map"></div>
-<div id="tabs-container"></div>
-
-<div id="identification" class="x-hide-display">
-<h4>{% trans "Identification" %}</h4>
-<p> <strong>{{ fl.title }}:</strong> {{ md.titleml }} </p>
-<p> <strong>{{ fl.referencedate }}</strong>
-  <ul>
-  {% for k in md.referencedate_set.all %} 
-  <li>{{ k.date|date:"d F Y" }} ({{ k.date_type }})</li>
-  {% endfor %}
-  </ul>
-</p>
-<p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|default:_("-") }} </p>
-<p> <strong>{{ fl.other_citation_details }}:</strong> {{ md.other_citation_details|default:_("-") }} </p>
-<p> <strong>{{ fl.supplemental_information }}:</strong> {{ md.supplemental_information|default:_("-") }} </p>
-<p> <strong>{{ fl.presentation_form }}:</strong> {{ md.presentation_form.all|join:', '|default:_("-") }}</p>
-<p> <strong>{{ fl.distribution_format }}:</strong> {{ md.distribution_format.all|join:', '|default:_("-") }}</p>
-<p> <strong>{{ fl.resource_type }}:</strong> {{ md.resource_type|default:_("-") }}</p>
-<p> <strong>{{ fl.uuid }}:</strong> {{ md.uuid|default:_("-") }}</p>
-<p> <strong>{{ fl.language }}:</strong> {{ md.language|default:_("-") }} </p>
-<p> <strong>{{ fl.character_set }}:</strong> {{ md.character_set|default:_("-") }} </p>
-<p> <strong>{{ fl.update_frequency }}:</strong> {{ md.update_frequency|default:_("-") }} </p>
-<p> <strong>{{ fl.spatial_representation_type_ext }}:</strong> {{ md.spatial_representation_type_ext.all|join:', '|default:_("-") }}</p>
-</div>
-<div id="respparty" class="x-hide-display">
-<h4>{% trans "Responsible party" %}</h4>
-<p > <strong>{{ fl.responsible_party_role }}:</strong>
-  {% for k in md.responsiblepartyrole_set.all %} 
-  {% include "metadata/responsibleparty.html" %}
-  {% endfor %}
-</p>
-</div>
-<div id="classification" class="x-hide-display">
-<h4>{% trans "Classification" %}</h4>
-<p> <strong>{{ fl.topic_category_ext }}:</strong> {{ md.topic_category_ext.all|join:', '|default:_("-") }}</p>
-<p> <strong>{{ fl.keywords }}:</strong> 
-   <ul>
-     {% for k in md.keywords_list_language %}
-      <li><a target="_blank" href="{{ k.1 }}">{{ k.3 }}</a>
-        <span class="newline_detail">{{ k.0 }}</span>
-        <span class="newline_detail">{{ k.2 }}</span>
-      </li>
-    {% endfor %}
-   </ul>
-</p>
-<p> <strong>{{ fl.inspire }}:</strong> {% if md.inspire %}Si{% else %}No{% endif %}</p>
-</div>
-<div id="geoext" class="x-hide-display">
-<h4>{% trans "Geographic extent" %}</h4>
-<p> <strong>{{ fl.ref_sys }}:</strong>  <a target="_blank" href="http://spatialreference.org/ref/epsg/{{ md.ref_sys.srid }}/">{{ md.ref_sys }}</a></p>
-<p> <strong>{{ fl.geographic_bounding_box }}:</strong> 
-  <table id="id_bbox">
-    <tr><td></td><td>North<br/>{{ md.geographic_bounding_box_geometry.extent.3 }}</td><td></td></tr>
-    <tr><td>West<br/>{{ md.geographic_bounding_box_geometry.extent.0 }}</td><td></td><td>East<br/>{{ md.geographic_bounding_box_geometry.extent.2 }}</td></tr>
-    <tr><td></td><td>South<br/>{{ md.geographic_bounding_box_geometry.extent.1 }}</td><td></td></tr>
-  </table>
-</p>
-<p> <strong>{{ fl.vertical_datum }}:</strong> {{ md.vertical_datum|default:_("-") }}</p>
-<p> <strong>{{ fl.vertical_extent_min }}:</strong> {{ md.vertical_extent_min|default:_("-") }}</p>
-<p> <strong>{{ fl.vertical_extent_max }}:</strong> {{ md.vertical_extent_max|default:_("-") }}</p>
-<p> <strong>{{ fl.uom_vertical_extent }}:</strong> {{ md.uom_vertical_extent|default:_("-") }}</p>
-</div>
-<div id="tempext" class="x-hide-display">
-<h4>{% trans "Temporal extent" %}</h4>
-<p><strong>{{ fl.temporalextent }}</strong>
-  <ul>
-  {% for k in md.temporalextent_set.all %} 
-  <li>{{ k.temporal_extent_begin|date:"d F Y" }} ... {{ k.temporal_extent_end|date:"d F Y" }}</li>
-  {% endfor %}
-  </ul>
-</p>
-</div>
-<div id="quality" class="x-hide-display">
-<h4>{% trans "Quality - spatial resolution" %}</h4>
-<p> <strong>{{ fl.lineage }}:</strong> {{ md.lineage|default:_("-") }}</p>
-<p> <strong>{{ fl.equivalent_scale }}:</strong> {{ md.equivalent_scale|default:_("-") }}</p>
-<p> <strong>{{ fl.distance }}:</strong> {{ md.distance|default:_("-") }}</p>
-<p> <strong>{{ fl.uom_distance }}:</strong> {{ md.uom_distance|default:_("-") }}</p>
-</div>
-<div id="constraints" class="x-hide-display">
-<h4>{% trans "Constraints" %}</h4>
-<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("-") }}</p>
-<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>
-<p> <strong>{{ fl.use_constraints }}:</strong> {{ md.use_constraints|default:_("-") }}</p>
-<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>
-<p> <strong>{{ fl.security_constraints }}:</strong> {{ md.security_constraints|default:_("-") }}</p>
-</div>
+{% include "metadata/metadata_details.html" %}
 <div id="metametadata" class="x-hide-display">
-<h4>{% trans "Meta metadata" %}</h4>
-<p> <strong>{{ fl.md_date_stamp }}:</strong> {{ md.md_date_stamp|date:"d F Y" }}</p>
-<p > <strong>{{ fl.md_responsible_party_role }}:</strong>
-  {% for k in md.mdresponsiblepartyrole_set.all %} 
-  {% include "metadata/responsibleparty.html" %}
-  {% endfor %}
-</p>
-<p> <strong>{{ fl.md_character_set }}:</strong> {{ md.md_character_set }}</p>
-<p> <strong>{{ fl.md_standard_name }}:</strong> {{ md.md_standard_name }}</p>
-<p> <strong>{{ fl.md_version_name }}:</strong> {{ md.md_version_name }}</p>
-<p> <strong>{{ fl.md_uuid }}:</strong> {{ md.md_uuid }}</p>
 </div>
 
 </div>
@@ -458,8 +341,6 @@ Ext.onReady(function() {
 
 {% block sidebar %}
 <div id="sidebar" class="threecol">
-    <h3> {% trans "GEMET keywords" %}</h3>
-    {% render_connections layer.layerext %}
     <h3> {% trans "Related resources" %}</h3>
     <div id="related_resources-manager"></div>
     <br/>
@@ -531,19 +412,28 @@ Ext.onReady(function() {
         <ul>
 			{% if user.is_authenticated %}
         {% if can_change %}
-                <!--li><a href="?describe">{% trans "Update the description of this data" %}</a></li-->
-		<!-- temporary link -->
-                <li><a href="/admin/metadata/layerext/{{layer.pk}}/">{% trans "Update the description of this data" %}</a></li>
-            	<li><a href="?update">{% trans "Upload a new version of this data" %}</a></li>
+        <!--li> <a href="{% url layer_metadata layer.typename %}">
+            {% trans "Update the description of this data" %}
+        </a> </li-->
+        <li><a href="/admin/metadata/layerext/{{layer.pk}}/">
+	    {% trans "Update the description of this data" %}
+	</a></li>
+        <li> <a href="{% url layer_replace layer.typename %}">
+            {% trans "Upload a new version of this data" %}
+        </a></li>
         {% endif %}
         {% if can_change_permissions %}
-        <li><a href="{% url edit_layer_permissions layer.typename %}">{% trans "Edit Permissions" %}</a></li>
+        <li><a href="{% url edit_layer_permissions layer.typename %}">
+            {% trans "Edit Permissions" %}
+        </a></li>
         {% endif %}
             {% if can_delete %}
-				<li><a href="?remove">{% trans "Remove" %}</a></li>
+            <li><a href="{% url layer_remove layer.typename %}">
+                {% trans "Remove" %}
+            </a></li>
 			{% endif %}
 			{% else %}
-				<li>Please authenticate to update or remove layers</li>
+            <li>{% trans "Please authenticate to update or remove layers" %}</li>
 			{% endif %}
         </ul>
     {% endif %}

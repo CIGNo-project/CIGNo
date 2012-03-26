@@ -73,13 +73,16 @@ Ext.onReady(function(){
 	    cls: 'x-check-group-alt',
 	    items: [
                 {boxLabel: 'Upload file', name: 'upload_mode', inputValue: 'upload', checked: true},
-                {boxLabel: 'Link web resource', inputValue: 'link', name: 'upload_mode'}
+                {boxLabel: 'Link web resource', inputValue: 'link', name: 'upload_mode'},
+                {boxLabel: 'Metadata only', inputValue: 'metadata', name: 'upload_mode'}
                 //{boxLabel: 'Import web resource', inputValue: 'import', name: 'upload_mode'},
 	    ],
 	    listeners: {
 		"change": function(radiogroup, radio){
 		    if(radio.inputValue == 'link' || radio.inputValue == 'import' ){
 			link_mode();
+                    } else if(radio.inputValue == 'metadata'){
+                        metadata_mode();
 		    } else {
 			fileupload_mode();
 		    }
@@ -173,6 +176,14 @@ Ext.onReady(function(){
 	//url_field.emptyText=gettext('Insert a valid resource URL');
 	base_file.hide();
 	url_field.show();
+    }
+
+    var metadata_mode = function(){
+	base_file.allowBlank= true;
+	url_field.allowBlank= true;
+	//url_field.emptyText=gettext('Insert a valid resource URL');
+	base_file.hide();
+	url_field.hide();
     }
 
     var fileupload_mode = function(){

@@ -2,7 +2,7 @@
 from django.core.management.base import BaseCommand
 from geonode.maps.models import Layer
 from geonode.core.models import AUTHENTICATED_USERS, ANONYMOUS_USERS
-from models import  Resource
+from cigno.metadata.models import  Resource
 from urllib2 import URLError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -11,13 +11,15 @@ from django.contrib.auth.models import User
 import uuid
 from string import lower
 import json
+import simplejson
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils import translation
 from django.template import RequestContext, loader
 from django.views.decorators.csrf import csrf_exempt, csrf_response_exempt, csrf_protect
 from django.utils.translation import ugettext as _
-from forms import ResourceUploadForm, ResourceForm, ResourceSimpleForm
+#from forms import ResourceUploadForm, ResourceUpload2Form, ResourceForm, ResourceSimpleForm, ResourceUpload2Form
+from forms import *
 import os
 import re
 from urlparse import urlparse
@@ -128,9 +130,162 @@ def updatelayers(request, layername=None):
 
 
 ######### ex dm app
+from models import ALL_LICENSES
+from django.core import serializers
+
+def serialize_clean(obj, prefix=None):
+    serialized = serializers.serialize("json", [obj])
+    obj = simplejson.loads(serialized)[0]['fields']
+    if prefix is not None:
+        _obj = {}
+        for key, value in obj.iteritems():
+            _obj['%s-%s' % (prefix, key)] = value
+        obj = _obj
+
+    return obj
+
+
+def initialdata(resource):
+    for r in resource._meta.fields:
+        value = r.value_to_string(resource)
+        if value is not None:
+            # response[r.name] = r.value_to_string(resource)
+            # response[r.name] = r.value_from_object(resource)
+            pass
+    # serialized = serializers.serialize("json", [resource])
+    # initial = simplejson.dumps(simplejson.loads(serialized)[0]['fields'])
+    initial = serialize_clean(resource)
+
+    # add temporalextent
+    count = 0
+    for t in  resource.temporalextent_set.all():
+        initial.update(serialize_clean(t, 'temporalextent_set-%s' % count))
+        count += 1
+    initial['temporalextent_set'] = count
+    # responsible party
+    count = 0
+    for t in  resource.responsiblepartyrole_set.all():
+        initial.update(serialize_clean(t, 'responsiblepartyrole_set-%s' % count))
+        count += 1
+    initial['responsiblepartyrole_set'] = count
+    count = 0
+    for t in  resource.mdresponsiblepartyrole_set.all():
+        initial.update(serialize_clean(t, 'mdresponsiblepartyrole_set-%s' % count))
+        count += 1
+    initial['mdresponsiblepartyrole_set'] = count
+
+    # many2many
+    initial['topic_category_ext_str'] = ",".join("%s" % tup for tup in resource.topic_category_ext.values_list('id'))
+    initial['presentation_form_str'] = ",".join("%s" % tup for tup in resource.presentation_form.values_list('id'))
+    initial['distribution_format_str'] = ",".join("%s" % tup for tup in resource.distribution_format.values_list('id'))
+    initial['spatial_representation_type_ext_str'] = ",".join("%s" % tup for tup in resource.spatial_representation_type_ext.values_list('id'))
+    initial['geonames'] = resource.geonamesGeoJson()
+    
+    return initial
+
+
+@login_required
+@csrf_exempt
+def resource_metadata(request, resource = None):
+    if request.method == 'GET':    
+        if resource is not None:
+            resource = Resource.objects.get(pk=resource)
+            initial = initialdata(resource)
+        else:
+            initial = []
+
+        return render_to_response('metadata/resource_upload_devel.html',
+                                  RequestContext(request, { #"formset": formset,
+                                                           'all_licenses': ALL_LICENSES,
+                                                           #'initial': simplejson.dumps(response, cls=DjangoJSONEncoder, indent=4)
+                                                           'initial': simplejson.dumps(initial)
+                                                           }))
+
+    elif request.method == 'POST':
+        from django.utils.html import escape
+        import os, shutil
+
+        if resource is not None:
+            resource = get_object_or_404(Resource, pk=resource)
+            form = ResourceUpload2Form(request.POST, request.FILES, instance=resource)
+        else:
+            form = ResourceUpload2Form(request.POST, request.FILES)
+
+        tempdir = None
+        if form.is_valid():
+            saved_resource = form.save(commit=False)
+            saved_resource.set_owner(request.user)
+            upload_mode = request.POST.get('upload_mode')
+            if upload_mode == 'upload':
+                name, __ = os.path.splitext(form.cleaned_data["base_file"].name)
+                saved_resource.name = get_valid_name(name)
+            elif upload_mode == 'link':
+                url = urlparse(form.cleaned_data["url_field"])
+                saved_resource.name = get_valid_name(url.path or url.netloc)
+            saved_resource.save()
+            saved_resource.set_default_permissions()
+            # save manytomany
+            # form.save_m2m()
+            topic_category_ext_str =  request.POST.get('topic_category_ext_str', None)
+            if topic_category_ext_str is not None and len(topic_category_ext_str.strip())>0:
+                saved_resource.topic_category_ext.remove(*saved_resource.topic_category_ext.all())
+                saved_resource.topic_category_ext.add(*topic_category_ext_str.split(','))
+
+            presentation_form_str =  request.POST.get('presentation_form_str', None)
+            if presentation_form_str is not None and len(presentation_form_str.strip())>0:
+                saved_resource.presentation_form.remove(*saved_resource.presentation_form.all())
+                saved_resource.presentation_form.add(*presentation_form_str.split(','))
+
+            distribution_format_str =  request.POST.get('distribution_format_str', None)
+            if distribution_format_str is not None and len(distribution_format_str.strip())>0:
+                saved_resource.distribution_format.remove(*saved_resource.distribution_format.all())
+                saved_resource.distribution_format.add(*distribution_format_str.split(','))
+
+            spatial_representation_type_ext_str =  request.POST.get('spatial_representation_type_ext_str', None)
+            if spatial_representation_type_ext_str is not None and len(spatial_representation_type_ext_str.strip())>0:
+                saved_resource.spatial_representation_type_ext.remove(*saved_resource.spatial_representation_type_ext.all())
+                saved_resource.spatial_representation_type_ext.add(*spatial_representation_type_ext_str.split(','))
+
+            # save inline
+            formset = ResourceReferenceDateInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='referencedate_set')
+            if formset.is_valid():
+                saved_resource.referencedate_set.all().delete()
+                formset.save()
+                
+            formset = ResourceTemporalExtentInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='temporalextent_set')
+            if formset.is_valid():
+                saved_resource.temporalextent_set.all().delete()
+                formset.save()
+
+            formset = ResourceResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='responsiblepartyrole_set')
+            if formset.is_valid():
+                saved_resource.responsiblepartyrole_set.all().delete()
+                formset.save()
+
+            formset = ResourceMdResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='mdresponsiblepartyrole_set')
+            if formset.is_valid():
+                saved_resource.mdresponsiblepartyrole_set.all().delete()
+                formset.save()
+            else:
+                errors = formset.errors
+
+            return HttpResponse(json.dumps({
+                        "success": True,
+                        #"redirect_to": saved_resource.get_absolute_url() + "?describe"
+                        "redirect_to": saved_resource.get_absolute_url()
+                        }))
+        else:
+            errors = []
+            for e in form.errors.values():
+                errors.extend([escape(v) for v in e])
+            return HttpResponse(json.dumps({ "success": False, "errors": errors}))
+    
+
 @login_required
 @csrf_exempt
 def upload_resource(request):
+    if  request.user.username == 'menegon' or request.user.username == 'andrea':
+        return resource_metadata(request)
     if request.method == 'GET':
         return render_to_response('metadata/resource_upload.html',
                                   RequestContext(request, {}))
@@ -138,7 +293,7 @@ def upload_resource(request):
         from django.utils.html import escape
         import os, shutil
         form = ResourceUploadForm(request.POST, request.FILES)
-        #form = testUploadForm(request.POST, request.FILES)
+        # form = testUploadForm(request.POST, request.FILES)
         tempdir = None
         if form.is_valid():
             saved_resource = form.save(commit=False)
@@ -244,7 +399,7 @@ def resourceController(request, resourcename):
         #metadataMetadata = get_object_or_404(Metadata, uuid=resource.uuid)
         metadataMetadata = None
         return render_to_response('metadata/resource.html', RequestContext(request, {
-            "layer": resource,
+            "md": resource,
             #"metadata": metadata,
             "permissions_json": _perms_info_json(resource, RESOURCE_LEV_NAMES),
 	    }))
@@ -286,3 +441,102 @@ def ajax_resource_permissions(request, resourceid):
         status=200,
         mimetype='text/plain'
     )
+
+from models import  *
+
+def _tojson(obj):
+    response = obj.__dict__        
+    del(response['_state'])
+    return response
+
+def api(request, model, id=None):
+    if id is not None:
+        return _api(request, model, id)
+    else:
+        return _api_list(request, model)
+
+from django.core.serializers.json import DjangoJSONEncoder
+def _api(request, model, id):
+    response = {}
+
+
+    if model=='resource':
+        resource = _tojson(Resource.objects.get(pk=id))
+
+    return HttpResponse(simplejson.dumps(response, cls=DjangoJSONEncoder, indent=4), 
+                        mimetype="application/json"
+                        #mimetype="text/plain"
+                        )
+    
+def _api_list(request, model):
+    response = {
+        "metaData": {
+            "idProperty": "id",
+            "root": "rows",
+            "totalProperty": "results",
+            "successProperty": "success",
+            "fields": [
+                {"name": "id"},
+                {"name": "label"}
+                ],
+            # used by store to set its sortInfo
+            "sortInfo":{
+                "field": "label",
+                "direction": "ASC"
+                },
+            # paging data (if applicable)
+            # "start": 0,
+            # "limit": 2,
+            # custom property
+            # "foo": "bar"
+            },
+        # Reader's configured successProperty
+        "success": True,
+        # Reader's configured totalProperty
+        "results": None,
+        # Reader's configured root
+        # (this data simulates 2 results per page)
+        }
+
+    query = request.POST.get('query', None)
+    registered_models = {'datetype': CodeDateType,
+                         'samplefrequency': CodeSampleFrequency,
+                         'responsibleparty': ResponsibleParty,
+                         'role': CodeRole,
+                         'topiccategory': CodeTopicCategory,
+                         'presentationform': CodePresentationForm,
+                         'distributionformat': CodeDistributionFormat,
+                         'resourcetype': CodeScope,
+                         'characterset': CodeCharacterSet,
+                         'updatefrequency': CodeMaintenanceFrequency,
+                         'spatialrepresentationtype': CodeSpatialRepresentationType,
+                         'verticaldatum': CodeVerticalDatum,
+                         }
+
+    indent = 4 if request.GET.__contains__('indent') else None
+    rows = []
+    if model=='language':
+        queryset = ALL_LANGUAGES
+        for i in queryset:
+            label = i[1].__unicode__()
+            rows.append({'id': i[0], 'label': label})
+    else:
+        Model = registered_models[model]
+        queryset = Model.objects.all()
+        for i in queryset:
+            label = i.__unicode__()
+            if query is not None and label.lower().find(query.lower())==-1:
+                continue
+            rows.append({'id': i.pk, 'label': label})
+            
+        
+    response['rows'] = rows
+    response['results'] = len(queryset)
+    
+    # return HttpResponse(json.dumps(response, indent=indent), 
+    return HttpResponse(json.dumps(response), 
+                        mimetype="application/json"
+                        #mimetype="text/plain"
+                        )
+    
+
