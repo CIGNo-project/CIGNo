@@ -9,12 +9,17 @@ GEONODE_ROOT = os.path.dirname(geonode.__file__)
 ROOT_URLCONF = 'cigno.urls'
 
 # required by django-admin-tools
-TEMPLATE_CONTEXT_PROCESSORS += [
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.core.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "geonode.maps.context_processors.resource_urls",
     # django 1.2 only
     'django.contrib.messages.context_processors.messages',
     # required by django-admin-tools
     'django.core.context_processors.request',
-    ]
+    )
 
 INSTALLED_APPS = (
     # cigno - required by admin-tools
