@@ -186,15 +186,24 @@ def initialdata(resource):
 
 @login_required
 @csrf_exempt
-def resource_metadata(request, resource = None):
+def resource_metadata(request, resourceid = None):
+    resource = None
+    if resourceid is not None:
+        resource = get_object_or_404(Resource, pk=resourceid)
+
+    if request.user.is_authenticated():
+        if resource is not None and not request.user.has_perm('metadata.change_resource', obj=resource):
+            return HttpResponse(loader.render_to_string('401.html', 
+                                                        RequestContext(request, {'error_message': 
+                                                                                 _("You are not permitted to modify this resource's metadata")})), status=401)
+
     if request.method == 'GET':    
         if resource is not None:
-            resource = Resource.objects.get(pk=resource)
             initial = initialdata(resource)
         else:
             initial = []
 
-        return render_to_response('metadata/resource_upload_devel.html',
+        return render_to_response('metadata/resource_metadata.html',
                                   RequestContext(request, { #"formset": formset,
                                                            'all_licenses': ALL_LICENSES,
                                                            #'initial': simplejson.dumps(response, cls=DjangoJSONEncoder, indent=4)
@@ -206,7 +215,6 @@ def resource_metadata(request, resource = None):
         import os, shutil
 
         if resource is not None:
-            resource = get_object_or_404(Resource, pk=resource)
             form = ResourceUpload2Form(request.POST, request.FILES, instance=resource)
         else:
             form = ResourceUpload2Form(request.POST, request.FILES)
@@ -355,7 +363,8 @@ def _describe_resource(request, resource):
         return HttpResponse("Not allowed", status=403)
 
 @csrf_exempt
-def _remove_resource(request,resource):
+def resource_remove(request, resourceid):
+    resource = get_object_or_404(Resource, pk=resourceid)
     if request.user.is_authenticated():
         if not request.user.has_perm('metadata.delete_resource', obj=resource):
             return HttpResponse(loader.render_to_string('401.html', 
@@ -375,21 +384,12 @@ def _remove_resource(request,resource):
         return HttpResponse("Not allowed",status=403)
 
 
-@csrf_exempt
-def resourceController(request, resourcename):
-    #resource = get_object_or_404(Resource, name=resourcename)
-    resource = get_object_or_404(Resource, pk=resourcename)
-    if (request.META['QUERY_STRING'] == "describe"):
-        return _describe_resource(request,resource)
-    if (request.META['QUERY_STRING'] == "remove"):
-        return _remove_resource(request,resource)
-    if (request.META['QUERY_STRING'] == "update"):
-        return _updateResource(request,resource)
-    else: 
-        if not request.user.has_perm('metadata.view_resource', obj=resource):
-            return HttpResponse(loader.render_to_string('401.html', 
-                RequestContext(request, {'error_message': 
-                    _("You are not permitted to view this resource")})), status=401)
+def resource_detail(request, resourceid):
+    resource = get_object_or_404(Resource, pk=resourceid)
+    if not request.user.has_perm('metadata.view_resource', obj=resource):
+        return HttpResponse(loader.render_to_string('401.html', 
+                                                    RequestContext(request, {'error_message': 
+                                                                             _("You are not permitted to view this resource")})), status=401)
         
         # metadata = resource.metadata_csw()
 
@@ -397,12 +397,12 @@ def resourceController(request, resourcename):
 
         # estraggo informazioni aggiuntive dalla scheda metadati
         #metadataMetadata = get_object_or_404(Metadata, uuid=resource.uuid)
-        metadataMetadata = None
-        return render_to_response('metadata/resource.html', RequestContext(request, {
-            "md": resource,
-            #"metadata": metadata,
-            "permissions_json": _perms_info_json(resource, RESOURCE_LEV_NAMES),
-	    }))
+    metadataMetadata = None
+    return render_to_response('metadata/resource.html', RequestContext(request, {
+                "md": resource,
+                #"metadata": metadata,
+                "permissions_json": _perms_info_json(resource, RESOURCE_LEV_NAMES),
+                }))
 
 def set_resource_permissions(resource, perm_spec):
     if "authenticated" in perm_spec:

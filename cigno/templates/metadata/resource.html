@@ -214,15 +214,15 @@ var related_resources_panel;
         <ul>
 			{% if user.is_authenticated %}
         {% if can_change %}
-                <li><a href="?describe">{% trans "Update the description of this data" %} ({% trans "simple form" %})</a></li>
-                <li><a href="/admin/metadata/resource/{{md.pk}}/">{% trans "Update the description of this data" %} ({% trans "advanced form" %})</a></li>
+                <li><a href="{% url cigno.metadata.views.resource_metadata resourceid=md.id %}">{% trans "Update the description of this data" %}</a></li>
+                <!--li><a href="/admin/metadata/resource/{{md.pk}}/">{% trans "Update the description of this data" %} ({% trans "advanced form" %})</a></li-->
                 <!--li><a href="?update">{% trans "Upload a new version of this data" %}</a></li-->
         {% endif %}
         {% if can_change_permissions %}
         <li><a href="{% url edit_resource_permissions md.pk %}">{% trans "Edit Permissions" %}</a></li>
         {% endif %}
             {% if can_delete %}
-				<li><a href="?remove">{% trans "Remove" %}</a></li>
+				<li><a href="{% url cigno.metadata.views.resource_remove resourceid=md.id %}">{% trans "Remove" %}</a></li>
 			{% endif %}
 			{% else %}
 				<li>Please authenticate to update or remove resources</li>

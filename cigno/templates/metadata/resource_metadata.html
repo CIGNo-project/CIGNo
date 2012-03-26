@@ -1,0 +1,1437 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {% trans "Upload digital resource"  %} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+{% include "geonode/app_header.html" %}
+{% include "geonode/geo_header.html" %}
+
+<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
+
+<!--script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.Field.js"></script>
+<script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.FieldSet.js"></script>
+<script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.FormPanel.js"></script>
+<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/Spinner.js"></script> 
+<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/SpinnerField.js"></script> 
+<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/MultiSelect.js"></script> 
+<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/ItemSelector.js"></script> 
+<script type="text/javascript" src="/static/cigno/externals/gemetclient/build/GemetClient.js"></script>  
+<script type="text/javascript" src="/static/cigno/js/GemetPanel.js"></script-->
+<!--script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/PanZoom.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/ArgParser.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Util.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/MousePosition.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/DrawFeature.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/RegularPolygon.js"></script>  
+
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/SelectFeature.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/Feature.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Anchored.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Framed.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/FramedCloud.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Format/JSON.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Format/GeoJSON.js"></script-->  
+
+<link rel="stylesheet" type="text/css" href="/static/cigno/externals/ext/examples/ux/css/Spinner.css"/>
+<link rel="stylesheet" type="text/css" href="/static/cigno/externals/ext/examples/ux/css/MultiSelect.css"/>
+
+<!-- GeoNames -->
+<script type="text/javascript" src="/static/cigno/externals/GeoExt.ux/GeoNamesSearchCombo.js"></script>  
+<script type="text/javascript" src="/static/cigno/js/GeoNamesSearchCombo.js"></script>  
+
+<style>
+/* treepanel */
+.x-tree-root-ct, .x-tree-node-ct {
+    list-style-type: none;
+}
+</style>
+
+<link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/fileuploadfield/fileuploadfield.css"/>
+{{ block.super }}
+<script type="text/javascript">
+Ext.onReady(function() {
+});
+</script>
+{% endblock %}
+
+{% block main %}
+<div class="twocol">
+    <h2>{% trans "Add digital resource" %}</h2>
+  {% if errors %}
+    <div id="errors">
+      {% for error in errors %}
+        <div>{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div id="upload_form">
+  </div>
+
+  <!--div>
+    <form method="POST"> 
+  {{ formset }}
+<input type="submit">
+    </form>
+  </div-->
+
+</div>
+<script type="text/javascript">
+{% autoescape off %}
+Ext.onReady(function(){
+    Ext.QuickTips.init();
+    
+    var form_target = "{% url cigno.metadata.views.resource_metadata %}";
+    var xml_unsafe = /(^[^a-zA-Z\._]+)|([^a-zA-Z0-9\._])/g;
+    //     var document_title = new Ext.form.TextField({
+    // 	id: 'titleml_it',
+    // 	fieldLabel: gettext('Title'),
+    // 	name: 'titleml_it'
+    //     });
+    
+    // var resource_type = new Ext.form.ComboBox({
+    //     id: 'resource_type',
+    //     editable: false,
+    //     typeAhead: false,
+    //     //readOnly: true,
+    //     triggerAction: 'all',
+    //     fieldLabel: 'Resource type',
+    //     name: 'resource_type_label',
+    //     allowBlank: false,
+    //     mode: 'local',
+    //     store: [[1, 'text'], [2, 'image']],
+    //     hiddenName: 'resource_type',
+
+    //     width:120,
+    //     listWidth: 120
+    
+    // });
+    
+    
+    var url_field = new Ext.form.TextField({	    
+	anchor: '95%',
+	// emptyText: gettext('Insert a valid resource URL'), // non posso usarlo altrimenti passa il valore via post
+	fieldLabel: gettext('URL'),
+	name: 'url_field'
+    });
+    
+//     var upload_mode = new Ext.form.RadioGroup({
+// 	xtype: 'radiogroup',
+// 	fieldLabel: 'Upload mode',
+// 	cls: 'x-check-group-alt',
+// 	name: 'upload_mode',
+// 	items: [
+//             {boxLabel: 'Upload file', inputValue: 'upload', checked: true},
+//             {boxLabel: 'Link web resource', inputValue: 'link'},
+//             {boxLabel: 'Metadata only', inputValue: 'metadata'}
+//             //{boxLabel: 'Import web resource', inputValue: 'import', name: 'upload_mode'},
+// 	],
+// 	listeners: {
+// 	    "change": function(radiogroup, radio){
+// 		console.log(radiogroup);
+// 		console.log(radio);
+// 		if(radio){
+// 		    if(radio.inputValue == 'link' || radio.inputValue == 'import' ){
+// 			link_mode();
+//                     } else if(radio.inputValue == 'metadata'){
+// 			metadata_mode();
+// 		    } else {
+// 			fileupload_mode();
+// 		    }
+// 		}
+// 	    }
+// 	}
+//     });
+    
+    
+    var listeners = {
+        "fileselected": function(cmp, value) {
+            // remove the path from the filename - avoids C:/fakepath etc.
+            cmp.setValue(value.split(/[/\\]/).pop());
+        }
+    };
+    
+    var base_file = new Ext.ux.form.FileUploadField({
+	anchor: '95%',
+        id: 'base_file',
+        emptyText: gettext('Select a file'),
+        fieldLabel: gettext('Resource'),
+        name: 'base_file',
+        allowBlank: false,
+        listeners: listeners
+    });
+    
+    var abstractField = new Ext.form.TextArea({
+        id: 'abstractml', 
+        fieldLabel: gettext('Abstract'),
+        name: 'abstractml',
+        allowBlank: true
+    });
+    
+    var permissionsField = new Ext.form.Hidden({
+        name: "permissions"
+    });
+
+    var topicArray = [];
+    var topicStore = new Ext.data.Store({
+	proxy: new Ext.data.HttpProxy({ url: '/api/topiccategory/', method: 'POST' }),
+	reader: new Ext.data.JsonReader({}),
+	autoLoad: false,
+	listeners: {                                                                                                                         
+	    load: function(t, records, options) {
+		for(var i = 0; i < records.length; i++) {
+		    topicArray.push({id: records[i].data.id, boxLabel: records[i].data.label});
+		}
+	    }
+	}
+    });
+    topicStore.load();
+
+    // override itemselector adding setValue
+    Ext.override(Ext.ux.form.ItemSelector, {
+	drawUpIcon: false,
+	drawDownIcon: false,
+	drawTopIcon: false,
+	drawBotIcon: false,
+	setValue: function(val) {
+            if(!val) {
+		return;
+            }
+
+	    if(!this.fromMultiselect.view.store.isLoaded) {
+		this.fromMultiselect.view.store.addListener('load', function() {
+                    this.fromMultiselect.view.store.isLoaded = true;
+                    this.setValue(val);
+		}, this);
+		this.fromMultiselect.view.store.load();
+            }
+
+	    // 
+	    // if(!this.toMultiselect.view.store.isLoaded) {
+	    // 		this.toMultiselect.view.store.addListener('load', function() {
+	    //                     this.toMultiselect.view.store.isLoaded = true;
+	    //                     this.setValue(val);
+	    // 		}, this);
+	    // 		this.toMultiselect.view.store.load();
+	    //             }
+
+            val = val instanceof Array ? val : val.split(',');
+            var rec, i, id;
+            for(i = 0; i < val.length; i++) {
+		id = val[i];
+		if(this.toMultiselect.view.store.getById(id)) {
+                    continue;
+		}
+		rec = this.fromMultiselect.view.store.getById(id);
+		if(rec) {
+                    this.toMultiselect.view.store.add(rec);
+                this.fromMultiselect.view.store.remove(rec);
+		}
+            }
+	    this.fromMultiselect.view.refresh();
+	    this.toMultiselect.view.refresh();
+	}
+    });
+
+    Ext.form.AutoItemSelector = Ext.extend(Ext.ux.form.ItemSelector, {
+	initComponent:function() {
+	    var thisComponent = this; //reference to use in handler
+            var config = {
+		imagePath: '/static/cigno/externals/ext/examples/ux/images/',
+		bodyStyle: 'padding-bottom: 40px; padding-top: 10px;',
+		multiselects: [{
+		    width: 240,
+		    height: 200,	
+		    store: new Ext.data.Store({
+			proxy: new Ext.data.HttpProxy({ url: this.initialConfig['url'], method: 'POST' }),
+			reader: new Ext.data.JsonReader({}),
+			autoLoad: true
+		    }),
+		    displayField: 'label',
+		    valueField: 'id'
+		},{
+		    width: 240,
+		    height: 200,
+		    store: new Ext.data.JsonStore({data: {"rows": [], "success": true, "metaData": {"fields": [{"name": "id"}, {"name": "label"}], "root": "rows"}}}),
+		    displayField: 'label',
+		    valueField: 'id',
+		    tbar:[{
+			text: 'clear',
+			boxMaxHeight: '5',
+			handler:function(b){
+			    //console.log(b);
+			    thisComponent.reset();
+			    //Ext.getCmp(.id).reset();
+			    //fp.getForm().findField('topic_category_ext_str').reset();
+			}
+		    }]
+		}]
+            }; 
+            // apply config
+            Ext.apply(this, Ext.apply(this.initialConfig, config));
+            Ext.form.AutoItemSelector.superclass.initComponent.apply(this, arguments);
+	}
+// 	,
+// 	setValue: function(val) {
+// 	    console.log(this);
+//             if(!val) {
+// 		return;
+//             }
+// 	    if(!this.fromMultiselect.view.store.isLoaded) {
+// 		this.fromMultiselect.view.store.addListener('load', function() {
+//                     this.fromMultiselect.view.store.isLoaded = true;
+//                     this.setValue(val);
+// 		}, this);
+// 		this.fromMultiselect.view.store.load();
+//             }
+//             val = val instanceof Array ? val : val.split(',');
+//             var rec, i, id;
+//             for(i = 0; i < val.length; i++) {
+// 		id = val[i];
+// 		if(this.toMultiselect.view.store.getById(id)) {
+//                     continue;
+// 		}
+// 		rec = this.fromMultiselect.view.store.getById(id);
+// 		if(rec) {
+//                     this.toMultiselect.view.store.add(rec);
+//                     this.fromMultiselect.view.store.remove(rec);
+// 		}
+//             }
+// 	    this.fromMultiselect.view.refresh();
+// 	    this.toMultiselect.view.refresh();
+// 	}
+    });
+    Ext.reg('autoitemselector', Ext.form.AutoItemSelector);
+
+// 				width: 255,
+// 				height: 150,
+// 				store: new Ext.data.Store({
+// 				    reader: new Ext.data.JsonReader({}),
+// 				    data: {"rows": [], 
+// 					   "results": 1, 
+// 					   "success": true, 
+// 					   "metaData": {
+// 					       "sortInfo": {
+// 						   "field": "label", 
+// 						   "direction": "ASC"
+// 					       }, 
+// 					       "fields": [
+// 						   {"name": "id"}, 
+// 						   {"name": "label"}
+// 					       ], 
+// 					       "successProperty": "success", 
+// 					       "totalProperty": "results", 
+// 					       "idProperty": "id", 
+// 					       "root": "rows"
+// 					   }
+// 					  }
+// 				}),
+// 				displayField: 'label',
+// 				valueField: 'id',
+// 				tbar:[{
+// 				    text: 'clear',
+// 				    handler:function(){
+// 					fp.getForm().findField('topic_category_ext_str').reset();
+// 				    }
+// 				}]
+// 			    }]
+// 			}
+
+    Ext.form.AutoComboBox = Ext.extend(Ext.form.ComboBox, {
+	initComponent:function() {
+            var config = {
+		store: new Ext.data.Store({
+		    proxy: new Ext.data.HttpProxy({ url: this.initialConfig['url'], method: 'POST' }),
+		    reader: new Ext.data.JsonReader({}),
+		    autoLoad: true,	
+		    listeners: {                 
+			load: function() {
+			    this.store.isLoaded = true;
+			}, scope: this
+		    }
+		}),
+		displayField: 'label',
+		valueField: 'id',
+		typeAhead: true,
+		//mode: 'local',
+		triggerAction: 'all'
+            }; 
+            // apply config
+            Ext.apply(this, Ext.apply(this.initialConfig, config));
+            Ext.form.AutoComboBox.superclass.initComponent.apply(this, arguments);
+	},
+	setValue: function(v) {
+            if(!this.store.isLoaded && this.mode == 'remote') {
+		this.store.addListener('load', function() {
+                    // this.store.isLoaded = true; // move on config listener
+                    this.setValue(v);
+		}, this);
+		this.store.load();
+            } else {
+		Ext.form.AutoComboBox.superclass.setValue.apply(this, arguments);
+            }
+	}
+    });
+
+    Ext.reg('autocombo', Ext.form.AutoComboBox);
+
+
+    loadinitialdata = function(fp){
+	if(initial['temporalextent_set'] > 0){
+	    Ext.getCmp('temporalextent_set').clones(initial['temporalextent_set'] -1 );
+	    Ext.getCmp('temporalextent_set').ownerCt.doLayout();
+	}
+	if(initial['responsiblepartyrole_set'] > 0){
+	    Ext.getCmp('responsiblepartyrole_set').clones(initial['responsiblepartyrole_set'] -1 );
+	    Ext.getCmp('responsiblepartyrole_set').ownerCt.doLayout();
+	}
+	if(initial['mdresponsiblepartyrole_set'] > 0){
+	    Ext.getCmp('mdresponsiblepartyrole_set').clones(initial['mdresponsiblepartyrole_set'] -1 );
+	    Ext.getCmp('mdresponsiblepartyrole_set').ownerCt.doLayout();
+	}
+	var ResourceRecord = Ext.data.Record.create([]);
+	var record = new ResourceRecord(initial);
+	
+	fp.getForm().loadRecord(record);
+
+	// non dovrebbe servire
+	//Ext.getCmp('gemetkeywords').setValue(initial['gemetkeywords']);
+	if('geographic_bounding_box' in initial){
+	    Ext.getCmp('id-bboxgeonamespanel').mapPanel.loadBBOX(initial['geographic_bounding_box']);
+	};
+	if('geonames' in initial){
+	    Ext.getCmp('id-bboxgeonamespanel').mapPanel.loadGeoNames(initial['geonames']);
+	}
+    };
+
+    var allLicenses = [
+	{% for license in all_licenses %}
+   	   {boxLabel: '{{ license }}', name: 'use_limitation', inputValue: '{{ license }}'} {% if not forloop.last %},{% endif %}
+	{% endfor %}
+    ];
+
+    var initial = {{ initial }};
+    
+    GeoExt.BboxGeoNamesMapPanel = Ext.extend(GeoExt.MapPanel, {
+	//width: 530,
+	height: 400,
+	border: true,
+	zoom: 8,
+	center: new OpenLayers.LonLat(1372198, 5690838),
+	bbox: null,
+	geonames: [],
+	initComponent:function() {
+	    // hidden name to hold geonamesids
+	    this.id_geonamesids = Ext.id();
+	    
+	    OpenLayers.ImgPath = '/static/geonode/externals/openlayers/img/';
+	    OpenLayers.CSSPath = '/static/geonode/externals/openlayers/img/';
+	    var map = new OpenLayers.Map({"projection": "EPSG:900913"});
+	    // reverse reference
+	    map.geonames = this;
+	    var osmLayer = new OpenLayers.Layer.OSM();
+	    this.boxLayer = new OpenLayers.Layer.Vector("Box layer", {"projection": "EPSG:900913"});
+	    this.boxLayer.events.on(
+		{
+		    'featureremoved': function(evt){
+			Ext.getCmp('bboxgrid').store.removeAll();
+		    },
+		    'featureadded': function(evt){
+			if(this.boxLayer.features.length > 1){
+			    this.boxLayer.destroyFeatures(this.boxLayer.features.shift());
+			    this.bbox = evt.feature.geometry.getBounds();
+			};
+			//add geometry to form field
+			var bboxgrid = Ext.getCmp('bboxgrid');
+			var geometry = evt.feature.geometry.clone();
+			var outProjection = new OpenLayers.Projection('EPSG:4326');
+			var inProjection = map.getProjectionObject();
+ 			geometry.transform(inProjection, outProjection);
+			Ext.getCmp('geographic_bounding_box_id').setValue(this.geometryToEWKT(geometry));
+
+			//add feature on store
+			var bounds = geometry.getBounds();
+			bboxgrid.store.removeAll();
+			bboxgrid.store.add(new bboxgrid.store.recordType({
+			    east: bounds.left,
+			    south: bounds.bottom,
+			    west: bounds.right,
+			    north: bounds.top
+			}));
+
+		    },
+		    scope: this
+		}
+	    );		   
+
+	    var style = new OpenLayers.Style(
+		{
+		    graphicWidth: 21,
+		    graphicHeight: 25
+		},
+		{
+		    rules: [
+			new OpenLayers.Rule({
+			    // a rule contains an optional filter
+			    filter: new OpenLayers.Filter.Comparison({
+				type: OpenLayers.Filter.Comparison.EQUAL_TO,
+				property: "type", 
+				value: 'search'
+			    }),
+			    // if a feature matches the above filter, use this symbolizer
+			    symbolizer: {
+				externalGraphic: "/static/geonode/externals/openlayers/img/marker.png"
+			    }
+			}),
+			new OpenLayers.Rule({
+			    // a rule contains an optional filter
+			    filter: new OpenLayers.Filter.Comparison({
+				type: OpenLayers.Filter.Comparison.EQUAL_TO,
+				property: "type", 
+				value: 'link'
+			    }),
+			    // if a feature matches the above filter, use this symbolizer
+			    symbolizer: {
+				externalGraphic: "/static/geonode/externals/openlayers/img/marker-blue.png"
+			    }
+			})
+		    ]
+		}
+	    );
+	    var searchLayer = new OpenLayers.Layer.Vector("Search",{"projection": "EPSG:900913",
+								    styleMap: new OpenLayers.StyleMap(style)
+								   });
+	    this.searchLayer = searchLayer;
+	    // 	    searchLayer.events.on({ 
+	    // 	     	'featureadded': this.setGeonamesids,
+	    // 		'featureremoved': this.setGeonamesids,
+	    // 		scope: this
+	    // 	    });
+	    
+	    map.addLayers([osmLayer, this.boxLayer, searchLayer]);
+	    map.addControl(new OpenLayers.Control.MousePosition());
+
+
+	    this.selectControl = new OpenLayers.Control.SelectFeature(searchLayer,
+								     {onSelect: this.onFeatureSelect, onUnselect: this.onFeatureUnselect});
+	    //searchLayer.onFeatureInsert = this.onFeatureSelect;
+	    map.addControl(this.selectControl);
+	    this.selectControl.activate();
+
+            var config = {
+		layout: 'fit',
+		map: map,
+		tbar: [
+		    new GeoExt.Action({
+			text: "draw bounding box",
+			iconCls: 'icon-adduser',
+			control: new OpenLayers.Control.DrawFeature(this.boxLayer,
+								    OpenLayers.Handler.RegularPolygon, 
+								    {
+									handlerOptions: {
+									    sides: 4,
+									    irregular: true,
+									    multi: false
+									}
+								    }
+								   ),
+			map: map,
+			// button options
+			toggleGroup: "draw",
+			allowDepress: true,
+			tooltip: "draw bounding box",
+			// check item options
+			group: "draw"
+		    }),
+		    "-",
+		    {
+			text: 'remove bounding box',
+			iconCls: 'icon-removeuser',
+			handler:function(b){
+			    this.boxLayer.removeAllFeatures();
+			},
+			scope: this
+		    }
+		]
+            }; 
+            // apply config
+            Ext.apply(this, Ext.apply(this.initialConfig, config));
+            GeoExt.BboxGeoNamesMapPanel.superclass.initComponent.apply(this, arguments);
+	},
+	geometryToEWKT: function(geometry, srs){
+	    if(!srs){
+		srs = 'EPSG:4326';
+	    }
+	    var formatWkt =  new OpenLayers.Format.WKT();
+	    var EWKT = "SRID=" + srs + ";" + formatWkt.extractGeometry(geometry);
+	    return EWKT;
+	},
+	EWKTToFeature: function(EWKT, srs){
+	    if(!srs){
+		srs = 'EPSG:4326';
+	    }
+	    var formatWkt =  new OpenLayers.Format.WKT();
+	    var re = /^SRID=(\w+:\d+);(.+)$/;
+	    var m = re.exec(EWKT);
+	    if (m == null) {
+		return false;
+	    }
+	    var inProjection = new OpenLayers.Projection(m[1]);
+	    var outProjection = new OpenLayers.Projection(srs);
+	    var feature = formatWkt.read(m[2]);
+
+ 	    feature.geometry.transform(inProjection, outProjection);
+	    return feature;
+	},
+	loadBBOX: function(ewkt){
+	    var feature = this.EWKTToFeature(ewkt, this.boxLayer.projection.projCode );
+	    if(feature){
+		console.log('add');
+		this.boxLayer.addFeatures(feature);
+	    }
+	},
+	loadGeoNames: function(geoJSON){
+	    var geojson_format = new OpenLayers.Format.GeoJSON({internalProjection: this.searchLayer.projection,  
+								externalProjection: new OpenLayers.Projection('EPSG:4326')});
+	    var feature = geojson_format.read(geoJSON);
+	    this.searchLayer.addFeatures(feature);
+	},
+	setGeonamesids: function(evt){
+	    features = this.searchLayer.features;
+	    var ids = [];
+            for (var i=0; i<features.length; i++) {
+		var feature = features[i];
+		if(feature.attributes.type == 'link'){
+		    ids.push(feature.attributes.geonameId);
+		}
+            }
+	    var geonamesids = Ext.getCmp(this.id_geonamesids);
+	    geonamesids.setValue(ids.join(','));	    
+	},
+	onFeatureSelect: function(feature) {
+	    var buttonid = Ext.id();
+            popup = new OpenLayers.Popup.FramedCloud("chicken", 
+						     feature.geometry.getBounds().getCenterLonLat(),
+						     null,
+						     //"<div style='font-size:.8em'>" + feature.attributes.name +"<br>" + feature.attributes.fcodeName+"</div>",
+						     "<div class='text-align: left'>"
+						     + "<b>" + feature.attributes.name + "</b>" 
+						     + "<small>"
+						     + "<br/>" + feature.attributes.fcodeName + "-" + feature.attributes.countryName
+						     + "<br/>"
+						     + "<br/>"
+						     + "<div style='height: 20px;' id='" + buttonid + "'>"
+						     + "</div>",
+						     null, true
+						     , function(evt) {console.log(evt); feature.layer.map.geonames.selectControl.unselect(feature);}
+						    );
+	    
+	    popup.feature = feature;
+            feature.popup = popup;
+	    this.map.addPopup(popup);
+
+	    if(feature.attributes.type == 'search'){
+		btn1 = new Ext.Button({
+                    renderTo: buttonid,
+                    text: 'Add',
+		    scope: feature,
+                    handler: function(){
+			var baseUrl = 'http://sws.geonames.org/';
+			feature.layer.redraw();
+			feature.attributes.type = 'link';
+			feature.layer.map.geonames.selectControl.unselect(feature);
+			feature.layer.map.geonames.setGeonamesids();
+		    }
+		});
+	    }else{
+		btn1 = new Ext.Button({
+                    renderTo: buttonid,
+                    text: 'Remove',
+		    scope: feature,
+                    handler: function(){
+			var baseUrl = 'http://sws.geonames.org/';
+			feature.layer.redraw();
+			feature.attributes.type = 'search';
+			feature.layer.map.geonames.selectControl.unselect(feature);
+			feature.layer.map.geonames.setGeonamesids();
+		    }
+		});
+	    }
+	},
+	onFeatureUnselect: function(feature) {
+            //app.mapPanel.map.removePopup(feature.popup);
+	    this.map.removePopup(feature.popup);
+            feature.popup.destroy();
+            feature.popup = null;
+	} 
+
+
+    });
+
+
+
+
+
+    GeoExt.BboxGeoNamesPanel = Ext.extend(GeoExt.MapPanel, {
+	map: {},
+	mapPanel: null,
+	initComponent:function() {
+	    if("map" in this.initialConfig){
+		Ext.apply(this.map, this.initialConfig['map']);
+	    }
+	    mapPanel = new GeoExt.BboxGeoNamesMapPanel(this.map);
+	    this.mapPanel = mapPanel;
+
+	    config = {
+		layout: 'fit',
+		items: [{
+		    title: 'Search GeoNames',
+		    xtype: 'panel',
+		    autoHeight: true,
+		    layout: 'fit',
+		    items: [
+			{
+			    xtype: 'gxux_geonamessearchcombo',
+			    layerName: 'Search',
+			    zoom: 12,
+			    map: mapPanel.map
+			}]
+		}, {
+		    id: mapPanel.id_geonamesids,
+		    xtype: 'hidden',
+		    name: 'geonamesids'
+		}, {
+		    id: 'geographic_bounding_box_id',
+		    xtype: 'hidden',
+		    name: 'geographic_bounding_box'
+		},
+			new Ext.grid.GridPanel({
+			    title: 'Bounding box',
+			    id: 'bboxgrid',
+			    viewConfig: {forceFit: true},
+			    store: new Ext.data.ArrayStore({
+				fields: [
+				    {name: 'east'},
+				    {name: 'south'},
+				    {name: 'west'},
+				    {name: 'north'}
+				]
+			    }),
+			    columns: [
+				{
+				    id       :'east',
+				    header   : 'East', 
+				    //width    : 160, 
+				    dataIndex: 'east'
+				},
+				{
+				    header   : 'South', 
+				    //width    : 160, 
+				    dataIndex: 'south'
+				},
+				{
+				    header   : 'West', 
+				    //width    : 160, 
+				    dataIndex: 'west'
+				},
+				{
+				    header   : 'North', 
+				    //width    : 160, 
+				    dataIndex: 'north'
+				}
+			    ],
+			    stripeRows: true,
+			    autoHeight: true,
+			    //width: 550,
+			    //title: 'Boundig box',
+			    // config options for stateful behavior
+			    stateful: true,
+			    stateId: 'grid'
+			}), 
+			mapPanel
+		       ]
+
+
+	    };
+
+            // apply config
+            Ext.apply(this, Ext.apply(this.initialConfig, config));
+            GeoExt.BboxGeoNamesPanel.superclass.initComponent.apply(this, arguments);
+	}
+    });
+
+
+    
+    
+    Ext.reg('bboxgeonamespanel', GeoExt.BboxGeoNamesPanel);
+
+    // validators
+    Ext.apply(Ext.form.VTypes, {
+	temporalextent: function(val, field){
+	    var container = field.ownerCt;
+	    var start;
+	    var end;
+	    var fUom;
+	    var fVal;
+	    Ext.each(container.items.items,function(f){
+		if(f.vname == 'extent_begin'){
+		    start = f;
+		}else if(f.vname == 'extent_end'){
+		    end = f;
+		}else if(f.vname == 'frequency_uom'){
+		    fUom = f;
+		}else if(f.vname == 'frequency_value'){
+		    fValue = f;
+		}
+	    });
+	    if(end.id == field.id){
+		date = field.parseDate(val);
+		if (!start.maxValue || (date.getTime() != start.maxValue.getTime())) {
+                    start.setMaxValue(date);
+                    start.validate();
+		}
+            } else if (start.id == field.id) {
+		date = field.parseDate(val);
+		if (!end.minValue || (date.getTime() != end.minValue.getTime())) {
+                    end.setMinValue(date);
+                    end.validate();
+		}
+            }
+	    return true;
+	},
+	responsibleparty: function(val, field){
+	    var allFields = field.ownerCt.items.items;
+	    var allowBlank = true;
+	    Ext.each(allFields,function(f){
+		if(f.getValue() != ''){
+		    allowBlank = false;
+		}
+	    });
+	    Ext.each(allFields,function(f){
+		if( f.allowBlank != allowBlank){
+		    f.allowBlank = allowBlank;
+		    if(f.id != field.id){
+			f.validate();
+		    }
+		}
+	    });
+	    return true;
+	},
+	daterange : function(val, field) {
+            var date = field.parseDate(val);	    
+            if(!date){
+		return false;
+            }
+            if (field.startDateField) {
+		var start = Ext.getCmp(field.startDateField);
+		if (!start.maxValue || (date.getTime() != start.maxValue.getTime())) {
+                    start.setMaxValue(date);
+                    start.validate();
+		}
+            }
+            else if (field.endDateField) {
+		var end = Ext.getCmp(field.endDateField);
+		if (!end.minValue || (date.getTime() != end.minValue.getTime())) {
+                    end.setMinValue(date);
+                    end.validate();
+		}
+            }
+	    
+            /*
+	     *          * Always return true since we're only using this vtype to set the
+	     *          * min/max allowed values (these are tested for after the vtype test)
+	     *          */
+	    return true;
+	},
+	password : function(val, field) {
+            if (field.initialPassField) {
+		var pwd = Ext.getCmp(field.initialPassField);
+		return (val == pwd.getValue());
+            }
+            return true;
+	},
+	passwordText : 'Passwords do not match'
+    });
+
+
+    var fp = new Ext.FormPanel({
+	id: 'resource_form',
+        renderTo: 'upload_form',
+	labelAlign: 'top',
+        fileUpload: true,
+        width: 600,
+        frame: true,
+        autoHeight: true,
+        //unstyled: true,
+        //labelWidth: 125,
+        defaults: {            
+            msgTarget: 'side',
+	    labelStyle: 'font-weight:bold;'
+        },
+	listeners: {                 
+            afterlayout: function() {
+	    },
+	    afterrender: function() {
+		loadinitialdata(this);
+	    }
+	},
+        //items: [upload_mode, base_file, url_field, document_title, resource_type, abstractField, permissionsField, {
+        items: [{
+	    anchor: '95%',
+	    xtype: 'radiogroup',
+	    fieldLabel: 'Select a resource type',
+	    cls: 'x-check-group-alt',
+	    name: 'type',
+	    items: [
+		{boxLabel: 'File', name: 'type', inputValue: 'local', checked: true},
+		{boxLabel: 'External link', name: 'type', inputValue: 'remote'},
+		{boxLabel: 'Metadata only', name: 'type', inputValue: 'metadata'}
+		//{boxLabel: 'Import web resource', inputValue: 'import', name: 'upload_mode'},
+	    ],
+	    listeners: {
+		"change": function(radiogroup, radio){
+		    if(radio){
+			if(radio.inputValue == 'remote' || radio.inputValue == 'import' ){
+			    link_mode();
+			} else if(radio.inputValue == 'metadata'){
+			    metadata_mode();
+			} else {
+			    fileupload_mode();
+			}
+		    }
+		}
+	    }
+	},
+	        //upload_mode, 
+		base_file, 
+		url_field, 
+		{
+		    xtype:'tabpanel',
+		    plain:true,
+		    activeTab: 0,
+		    autoHeight:true,
+		    deferredRender : false,
+		    listeners: {
+			tabchange: function(tp,newTab){
+			    newTab.doLayout();
+			}
+		    },
+		    defaults:   {autoScroll:true, autoHeight:true, bodyStyle:'padding:10px', width: 600, 
+				 defaults: {
+				     anchor: '97%',
+				     msgTarget: 'side',
+				     labelStyle: 'font-weight:bold;',
+				     defaults: {
+					 anchor: '97%',
+					 msgTarget: 'side',
+					 labelStyle: 'font-weight:bold;',
+					 defaults: {
+					     anchor: '97%',
+					     msgTarget: 'side',
+					     labelStyle: 'font-weight:bold;'
+					 }
+				     }
+				 }
+				},
+		    items:[{
+			title:'Identifications',
+			layout:'form',
+			items:[{
+			    xtype: 'tabpanel',
+			    plain: true,
+			    activeTab: 0,
+			    autoHeight:true,
+			    deferredRender : false,
+			    defaults:   {autoScroll:true, autoHeight:true, bodyStyle:'padding:10px', width: 600, 
+					 defaults: {
+					     anchor: '97%',
+					     msgTarget: 'side'
+					 }
+					},			    
+			    items: [{
+				title:'IT',
+				layout:'form',
+				items:[{
+				    xtype: 'textfield',
+				    id: 'titleml_it',
+				    fieldLabel: gettext('Title') + ' (IT)',
+				    name: 'titleml_it',
+				    allowBlank: false
+				},{
+				    xtype: 'textarea',
+				    id: 'abstractml_it', 
+				    fieldLabel: gettext('Abstract') + ' (IT)',
+				    name: 'abstractml_it',
+				    allowBlank: true
+				}]
+			    },{
+				title:'EN',
+				layout:'form',
+				items:[{
+				    xtype: 'textfield',
+				    id: 'titleml_en',
+				    fieldLabel: gettext('Title')  + ' (EN)',
+				    name: 'titleml_en'
+				},{
+				    xtype: 'textarea',
+				    id: 'abstractml_en', 
+				    fieldLabel: gettext('Abstract') + ' (EN)',
+				    name: 'abstractml_en',
+				    allowBlank: true
+				}]
+			    }]
+			},{
+			    xtype: 'compositefield',
+			    prefix: 'referencedate_set',
+			    fieldLabel: 'Reference date',
+			    msgTarget : 'side',
+			    anchor    : '-20',
+			    defaults: {
+				flex: 1
+			    },
+			    items: [{
+				xtype: 'datefield',
+				name : 'referencedate_set-0-date',
+				emptyText:'Select a date...',
+				vtype: 'responsibleparty'
+			    },{
+				xtype: "autocombo",
+				hiddenName: "referencedate_set-0-date_type",
+				url: '/api/datetype/',
+				emptyText:'Select a date type...',
+				vtype: 'responsibleparty'
+			    }]
+			},{
+			    xtype: 'label',
+			    html:'<hr/>'
+			},{
+			    xtype: 'radiogroup',
+			    fieldLabel: 'Use limitation',
+			    name: 'use_limitation',
+			    columns: 2,
+			    items: allLicenses
+			},{
+			    xtype: 'label',
+			    html:'<hr/>'
+			},{
+			    xtype:'fieldset',
+			    title: 'Temporal extent / Sample frequency',
+			    //collapsible: true,
+			    autoHeight:true,
+			    //defaults: {width: 530},
+			    defaultType: 'textfield',
+			    defaults: {
+				msgTarget : 'side',
+				anchor    : '-35'
+			    },
+			    items: [{
+				dynamic:true,
+				maxOccurs:5,
+				nclones: 0,
+				prefix: 'temporalextent_set',
+				xtype: 'compositefield',
+				id: 'temporalextent_set',
+				fieldLabel: '',
+				msgTarget : 'side',
+				defaults: {
+				    flex: 2
+				},
+				items: [
+				    {
+					xtype: 'datefield',
+					name : 'temporalextent_set-0-temporal_extent_begin',
+					emptyText:'Start date...',
+					vname: 'extent_begin',
+					vtype: 'temporalextent'
+				    },{
+					xtype: 'datefield',
+					name : 'temporalextent_set-0-temporal_extent_end',
+					emptyText:'End date...',
+					vname: 'extent_end',
+					vtype: 'temporalextent'
+				    },{
+					xtype: "autocombo",
+					hiddenName: "temporalextent_set-0-sample_frequency_uom",
+					url: '/api/samplefrequency/',
+					emptyText:'Type of frequency...',
+					vname: 'frequency_uom',
+					vtype: 'temporalextent',
+					flex: 3
+				    },{
+					xtype: 'spinnerfield',
+					allowDecimals: false,
+					name : 'temporalextent_set-0-sample_frequency_value',
+					vname: 'frequency_value',
+					vtype: 'temporalextent',
+					emptyText:'Frequancy value...'
+				    }
+				]
+			    }]
+			},{
+			    xtype:'fieldset',
+			    title: 'Responsible party - resource',
+			    //collapsible: true,
+			    autoHeight:true,
+			    //defaults: {width: 530},
+			    defaultType: 'textfield',
+			    defaults: {
+				msgTarget : 'side',
+				anchor    : '-35'
+			    },
+			    items: [{
+				dynamic:true,
+				prefix: "responsiblepartyrole_set",
+				id: "responsiblepartyrole_set",
+				maxOccurs:5,
+				xtype: 'compositefield',
+				fieldLabel: '',
+				defaults: {
+				    flex: 1
+				},
+				items: [{
+				    xtype: 'autocombo',
+				    url: '/api/responsibleparty/',		    
+				    hiddenName: "responsiblepartyrole_set-0-responsible_party",
+				    allowBlank: false,
+				    vtype: 'responsibleparty',
+				    emptyText:'Responsible party...'
+				},{
+				    xtype: "autocombo",
+				    hiddenName: "responsiblepartyrole_set-0-role",
+				    url: '/api/role/',
+				    allowBlank: false,
+				    vtype: 'responsibleparty',
+				    emptyText:'Role...'
+				}]
+			    }]
+			}]
+		    },{ // start tab
+			title:'Classification',
+			layout:'form',
+			items: [
+// 			    {
+// 			    xtype: 'fieldset',
+// 			    title: 'Topic category',
+// 			    autoHeight:true,
+// 			    items: [
+				{
+				    anchor: '97%',
+				    xtype: 'autoitemselector',
+				    url: '/api/topiccategory/',
+				    name: 'topic_category_ext_str',
+				    fieldLabel: 'Topic category'
+//				}]
+			},{
+			    xtype: 'keywordsgrid',
+			    id: 'keywords_grid_id',
+			    title: 'Keywords',
+			    autoHeight: true,
+			    border: true,
+			    bodyBorder: true,
+			    lang: '{{ LANGUAGE_CODE }}',
+			    outputLangs: ['it','en']
+			},{
+			    xtype: "hidden",
+			    name: "gemetkeywords",
+			    id: "gemetkeywords",
+			    setValue: function(v){
+				Ext.getCmp('keywords_grid_id').readData(v);
+			    },
+			    getValue: function(){
+				Ext.getCmp('keywords_grid_id').writeData();
+			    }
+			}
+			]
+		    },{
+			title:'Spatial information',
+			items: [{
+			    id: 'id-bboxgeonamespanel',
+			    xtype: 'bboxgeonamespanel'
+			},{
+			    xtype:'fieldset',
+			    title: 'Quality',
+			    collapsible: true,
+			    //checkboxToggle:true,
+			    collapsed: true,
+			    autoHeight:true,
+			    //defaults: {width: 530},
+			    defaultType: 'textfield',
+			    layout: 'form',
+			    items: [{
+				xtype: 'textarea',
+				fieldLabel: 'Lineage',
+				name: 'lineage'
+			    },{
+				xtype: 'numberfield',
+				allowDecimals: false,
+				fieldLabel: 'Spatail resolution - equivalent scale',
+				name: 'equivalent_scale'
+			    },{
+				xtype: 'numberfield',
+				allowDecimals: false,
+				fieldLabel: 'Distance',
+				name: 'distance'
+			    },{
+				fieldLabel: 'Distance - unit of measure',
+				name: 'uom_distance'
+			    }]
+			},{
+			    xtype:'fieldset',
+			    title: 'Vertical information',
+			    collapsible: true,
+			    //checkboxToggle:true,
+			    collapsed: true,
+			    autoHeight:true,
+			    //defaults: {width: 530},
+			    defaultType: 'textfield',
+			    items: [{
+				anchor: '95%',
+				xtype: "autocombo",
+				hiddenName: "vertical_datum",
+				url: '/api/verticaldatum/',
+				emptyText:'select datum...',
+				fieldLabel: 'Vertical datum'
+			    },{
+				xtype: 'numberfield',
+				fieldLabel: 'Vertical extent - minimum value',
+				name: 'vertical_extent_min'
+			    },{
+				xtype: 'numberfield',
+				fieldLabel: 'Vertical extent - maximum value',
+				name: 'vertical_extent_max'
+			    },{
+				fieldLabel: 'Vertical extent - unit of measure',
+				name: 'uom_vertical_extent'
+			    }]
+			}]
+		    },{
+			title:'Additional information',
+			layout:'form',
+			items: [{
+			    xtype: 'tabpanel',
+			    plain: true,
+			    activeTab: 0,
+			    autoHeight:true,
+			    deferredRender : false,
+			    defaults:   {autoScroll:true, autoHeight:true, bodyStyle:'padding:10px', width: 600, 
+					 defaults: {
+					     anchor: '97%',
+					     msgTarget: 'side'
+					 }
+					},			    
+			    items: [{
+				title:'IT',
+				layout:'form',
+				items:[{
+				    xtype: 'textarea',
+				    id: 'other_citation_details_it', 
+				    fieldLabel: gettext('Other citation details') + ' (IT)',
+				    name: 'other_citation_details_it',
+				    allowBlank: true
+				},{
+				    xtype: 'textarea',
+				    id: 'supplemental_information_ml_it', 
+				    fieldLabel: gettext('Supplemental information') + ' (IT)',
+				    name: 'supplemental_information_ml_it',
+				    allowBlank: true
+				}]
+			    },{
+				title:'EN',
+				layout:'form',
+				items:[{
+				    xtype: 'textarea',
+				    id: 'other_citation_details_en', 
+				    fieldLabel: gettext('Other citation details') + ' (EN)',
+				    name: 'other_citation_details_it',
+				    allowBlank: true
+				},{
+				    xtype: 'textarea',
+				    id: 'supplemental_information_ml_en', 
+				    fieldLabel: gettext('Supplemental information') + ' (EN)',
+				    name: 'supplemental_information_ml_en',
+				    allowBlank: true
+				}]
+			    }]
+			    },{
+				xtype: 'label',
+				html: '<hr/>'
+			    },{
+				xtype: 'autoitemselector',
+				url: '/api/presentationform/',
+				name: 'presentation_form_str',
+				fieldLabel: 'Presentation form'
+			    },{
+				xtype: 'autoitemselector',
+				url: '/api/distributionformat/',
+				name: 'distribution_format_str',
+				fieldLabel: 'Distribution format'
+			    },{
+				xtype: "autocombo",
+				hiddenName: "resource_type",
+				url: '/api/resourcetype/',
+				emptyText:'Resource type',
+				fieldLabel: 'Hierarchy level'
+			    },{
+				xtype: "autocombo",
+				hiddenName: "language",
+				url: '/api/language/',
+				emptyText:'select...',
+				fieldLabel: 'Language'
+			    },{
+				xtype: "autocombo",
+				hiddenName: "character_set",
+				url: '/api/characterset/',
+				emptyText:'select...',
+				fieldLabel: 'Character set'
+			    },{
+				xtype: "autocombo",
+				hiddenName: "update_frequency",
+				url: '/api/updatefrequency/',
+				emptyText:'select...',
+				fieldLabel: 'Maintenance frequency'
+			    },{
+				xtype: 'autoitemselector',
+				url: '/api/spatialrepresentationtype/',
+				name: 'spatial_representation_type_ext_str',
+				fieldLabel: 'Spatial representation type'
+			    },{
+				xtype:'fieldset',
+				title: 'Responsible party - metadata',
+				//collapsible: true,
+				autoHeight:true,
+				//defaults: {width: 530},
+				defaultType: 'textfield',
+				defaults: {
+				    msgTarget : 'side',
+				    anchor    : '-35'
+				},
+				items: [{
+				    dynamic:true,
+				    id: "mdresponsiblepartyrole_set",
+				    prefix: "mdresponsiblepartyrole_set",
+				    maxOccurs:5,
+				    xtype: 'compositefield',
+				    fieldLabel: '',
+				    defaults: {
+					flex: 1
+				    },
+				    items: [{
+					xtype: 'autocombo',
+					url: '/api/responsibleparty/',		    
+					hiddenName: "mdresponsiblepartyrole_set-0-responsible_party",
+					emptyText:'Responsible party...',
+					vtype: 'responsibleparty'
+				    },{
+					xtype: "hidden",
+					name: "mdresponsiblepartyrole_set-0-role",
+					value: "11"
+				    }
+					    // ,{
+					    // xtype: "autocombo",
+					    // hiddenName: "mdresponsiblepartyrole_set-0-role",
+					    // url: '/api/role/',
+					    // emptyText:'Role...',
+					    // vtype: 'responsibleparty'
+					   // }
+					   ]
+				}]
+			    }
+			]
+		    }]
+		},
+		permissionsField, {
+		    xtype: "hidden",
+		    name: "csrfmiddlewaretoken",
+		    value: "{{ csrf_token }}"
+		}],
+        buttons: [{
+            text: gettext('Upload'),
+            handler: function(){
+                if (fp.getForm().isValid()) {
+                    fp.getForm().submit({
+                        url: form_target,
+                        waitMsg: gettext('Uploading your data...'),
+                        success: function(fp, o) {
+                            document.location = o.result.redirect_to;
+                        },
+                        failure: function(fp, o) {
+                            error_message = '<ul>';
+                            for (var i = 0; i < o.result.errors.length; i++) {
+                                error_message += '<li>' + o.result.errors[i] + '</li>';
+                            }
+                            error_message += '</ul>';
+
+                            Ext.Msg.show({
+                                title: gettext("Error"),
+                                msg: error_message,
+                                minWidth: 200,
+                                modal: true,
+                                icon: Ext.Msg.ERROR,
+                                buttons: Ext.Msg.OK
+                            });
+                        }
+                    });
+                }
+            }
+        }]
+    });
+
+    var link_mode = function(){
+	base_file.allowBlank= true;
+	url_field.allowBlank= false;
+	//url_field.emptyText=gettext('Insert a valid resource URL');
+	base_file.hide();
+	url_field.show();
+    };
+    
+    var metadata_mode = function(){
+	base_file.allowBlank= true;
+	url_field.allowBlank= true;
+	//url_field.emptyText=gettext('Insert a valid resource URL');
+	base_file.hide();
+	url_field.hide();
+    };
+
+    var fileupload_mode = function(){
+	base_file.allowBlank= false;
+	url_field.allowBlank= true;
+	//url_field.emptyText='';
+	//console.log(url_field);
+	base_file.show();
+	url_field.hide();
+    };
+
+    fileupload_mode();
+    
+    
+    var permissionsEditor = new GeoNode.PermissionsEditor({
+        renderTo: "permissions_form",
+        userLookup: "{% url geonode.views.ajax_lookup %}",
+        listeners: {
+            updated: function(pe) {
+                permissionsField.setValue(Ext.util.JSON.encode(pe.writePermissions()));
+            }
+        },
+        permissions: {
+            anonymous: 'resource_readonly',
+            authenticated: 'resource_readonly',
+            users:[]
+        }
+    });
+    permissionsEditor.fireEvent("updated", permissionsEditor);
+});
+{% endautoescape %}
+</script>
+
+{% endblock %}
+
+
+{% block sidebar %}
+<div class="threecol">
+<h3>{%trans "Permissions"  %}</h3>
+
+<div id="permissions_form"></div>
+{% endblock %}
