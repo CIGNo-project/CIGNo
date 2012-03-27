@@ -404,9 +404,10 @@ def resource_detail(request, resourceid):
         # estraggo informazioni aggiuntive dalla scheda metadati
         #metadataMetadata = get_object_or_404(Metadata, uuid=resource.uuid)
     metadataMetadata = None
+    initial = initialdata(resource)
     return render_to_response('metadata/resource.html', RequestContext(request, {
                 "md": resource,
-                #"metadata": metadata,
+                "initial": simplejson.dumps(initial),
                 "permissions_json": _perms_info_json(resource, RESOURCE_LEV_NAMES),
                 }))
 

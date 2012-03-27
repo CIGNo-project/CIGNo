@@ -350,20 +350,20 @@ def rdfapi(request, action="read"):
     json = {'rows': [], 'count': 0}
 
     # append converage
-    uritype = 'http://purl.org/dc/terms/spatial'
-    for node in getattr(_subject, surf.util.rdf2attr(uritype, True)):
-      _predicate = crdf.Properties(uritype)
-      node = crdf.GeoNames(node) if  isinstance(node, URIRef) else node
-      node.load()
-      _object = node
-      json['rows'].append({'id': '%s|%s|%s' % (s, _predicate.subject, _object.subject),
-                           's': s, 
-                           'p': _predicate.subject, 
-                           'o': _object.subject,
-                           'pl': lbyl(_predicate.rdfs_label),
-                           'ol': lbyl(_object.gn_name),
-                           'd': True
-                           })
+    # uritype = 'http://purl.org/dc/terms/spatial'
+    #     for node in getattr(_subject, surf.util.rdf2attr(uritype, True)):
+    #       _predicate = crdf.Properties(uritype)
+    #       node = crdf.GeoNames(node) if  isinstance(node, URIRef) else node
+    #       node.load()
+    #       _object = node
+    #       json['rows'].append({'id': '%s|%s|%s' % (s, _predicate.subject, _object.subject),
+    #                            's': s, 
+    #                            'p': _predicate.subject, 
+    #                            'o': _object.subject,
+    #                            'pl': lbyl(_predicate.rdfs_label),
+    #                            'ol': lbyl(_object.gn_name),
+    #                            'd': True
+    #               })
 
     for uritype in supported_relations:
       for node in getattr(_subject, surf.util.rdf2attr(uritype, True)):

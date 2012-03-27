@@ -352,7 +352,7 @@ class Inspire(models.Model):
         crdf = CignoRDF()
         features= { "type": "FeatureCollection", "features": []}
         geonamesids = []
-        if len(self.geonamesids) > 0:
+        if self.geonamesids is not None and len(self.geonamesids) > 0:
             geonamesids = self.geonamesids.split(',')
         for id in geonamesids:
             gn = crdf.GeoNames('http://sws.geonames.org/%s/' % id)
@@ -423,6 +423,15 @@ class Inspire(models.Model):
             if lang == DEFAULT_LANGUAGE or value:
                 data[lang] = value
         return data
+
+    @property
+    def geographic_bounding_box_geometry(self):
+        # è molto strano ma bisogna rimuovere EPSG perché sia un EWKT valido
+        try:
+            geo = GEOSGeometry(self.geographic_bounding_box.replace('EPSG:',''))
+        except ValueError:
+            geo = None
+        return geo
     
 
 class ResourceManager(models.Manager):
@@ -637,14 +646,6 @@ class LayerExt(Layer, Inspire):
 
     NORMAL_SAVE = True
 
-    @property
-    def geographic_bounding_box_geometry(self):
-        # è molto strano ma bisogna rimuovere EPSG perché sia un EWKT valido
-        try:
-            geo = GEOSGeometry(self.geographic_bounding_box.replace('EPSG:',''))
-        except ValueError:
-            geo = None
-        return geo
 
     # dal template non riesco ad accedere direttamente alle proprietà dell'oggetto srs
     @property

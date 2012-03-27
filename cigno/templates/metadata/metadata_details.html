@@ -27,6 +27,11 @@ Ext.onReady(function() {
 <!--h4>{% trans "Identification" %}</h4-->
 <!--p> <strong>{{ fl.titleml }}:</strong> {{ md.titleml }} </p-->
 <p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|default:_("-") }} </p>
+<p style="display:block; margin:0 auto; text-align:center;" > 
+  {% if md.thumbnail_exists %}
+  <a href="{{link}}"><img src="{{ md.thumbnail_exists }}"/></a>
+  {% endif %}
+</p>
 <p> <strong>{% firstof fl.referencedate fl.resourcereferencedate %}</strong>
   {% for k in md.referencedate_set.all %} 
   {% if forloop.first %}<ul>{% endif %}

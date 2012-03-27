@@ -13,23 +13,26 @@
 {% include "geonode/app_header.html" %}
 {% include "geonode/geo_header.html" %}
 
+
+<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
+
 <!-- TODO: move on geonode-client after devel -->
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/SelectFeature.js"></script>  
+<!--script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/SelectFeature.js"></script>  
 <script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/Feature.js"></script>  
 <script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup.js"></script>  
 <script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Anchored.js"></script>  
 <script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Framed.js"></script>  
 <script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/FramedCloud.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Util.js"></script>  
+<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Util.js"></script-->  
 
-<script type="text/javascript" src="/static/cigno/js/RelationsManager.js"></script>  
+<!--script type="text/javascript" src="/static/cigno/js/RelationsManager.js"></script-->  
 
 <!-- JIT Library File -->
-<script type="text/javascript" src="/static/cigno/externals/jit/js/jit-yc.js"></script>
+<!--script type="text/javascript" src="/static/cigno/externals/jit/js/jit-yc.js"></script-->
 
 <!-- GeoNames -->
-<script type="text/javascript" src="/static/cigno/externals/GeoExt.ux/GeoNamesSearchCombo.js"></script>  
-<script type="text/javascript" src="/static/cigno/js/GeoNamesSearchCombo.js"></script>  
+<!--script type="text/javascript" src="/static/cigno/externals/GeoExt.ux/GeoNamesSearchCombo.js"></script>  
+<script type="text/javascript" src="/static/cigno/js/GeoNamesSearchCombo.js"></script-->  
 
 
 <!--link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" /-->
@@ -104,8 +107,16 @@ var related_resources_panel;
               rdf_s: '{{ md.get_absolute_url }}'
            });
 
-           loadGeonamesPanel();
-
+           //loadGeonamesPanel();
+	   var initial = {{ initial }};
+           var geonames = new GeoExt.BboxGeoNamesPanel({renderTo: 'preview_map', editable: false, mapHeight: 250});
+           if('geographic_bounding_box' in initial){
+	       geonames.mapPanel.loadBBOX(initial['geographic_bounding_box']);
+           };
+           if('geonames' in initial){
+	       geonames.mapPanel.loadGeoNames(initial['geonames']);
+           };
+	    
         });
 
 
@@ -169,12 +180,13 @@ var related_resources_panel;
 <div class="twocol">
 {% with md.field_labels as fl %}
 <div id="description"> <h3> {{ md.titleml }} </h3> </div>
-<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|truncatewords:30|default:_("No abstract for this resource.") }} </p>
-<p> 
+<!--p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|truncatewords:30|default:_("No abstract for this resource.") }} </p-->
+
+<!--p style="display:block; margin:0 auto; text-align:center;" > 
   {% if md.thumbnail_exists %}
   <a href="{{link}}"><img src="{{ md.thumbnail_exists }}"/></a>
   {% endif %}
-</p>
+</-->
 
 {% include "metadata/metadata_details.html" %}
 
@@ -187,7 +199,7 @@ var related_resources_panel;
     <h3> {% trans "Related resources" %}</h3>
     <div id="related_resources-manager"></div>
     <br/>
-    <h3>Add geonames</h3>
+    <h3>Bounding Box - GeoNames</h3>
     <div id="geonames_search"></div>
     <div id="preview_map"></div>
     <br/>
