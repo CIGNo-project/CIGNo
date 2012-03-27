@@ -44,5 +44,7 @@ def serialize_store(db_conn, filename):
     # rdflib can create necessary structures if the store is empty
     rt = rdfstore.open(db_conn, create=False)
     cg = ConjunctiveGraph(store=rdfstore)
-    cg.serialize(filename)
+    f = open(filename, 'w')
+    cg.serialize(f)
+    f.close()
     return True

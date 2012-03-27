@@ -587,11 +587,13 @@ Ext.onReady(function(){
 	    return feature;
 	},
 	loadBBOX: function(ewkt){
-	    var feature = this.EWKTToFeature(ewkt, this.boxLayer.projection.projCode );
-	    if(feature){
-		console.log('add');
-		this.boxLayer.addFeatures(feature);
-	    }
+       if(ewkt!=''){
+	        var feature = this.EWKTToFeature(ewkt, this.boxLayer.projection.projCode );
+	        if(feature){
+		    console.log('add');
+		    this.boxLayer.addFeatures(feature);
+	        }
+       }
 	},
 	loadGeoNames: function(geoJSON){
 	    var geojson_format = new OpenLayers.Format.GeoJSON({internalProjection: this.searchLayer.projection,  
@@ -1138,10 +1140,15 @@ Ext.onReady(function(){
 			    name: "gemetkeywords",
 			    id: "gemetkeywords",
 			    setValue: function(v){
-				Ext.getCmp('keywords_grid_id').readData(v);
+				   Ext.getCmp('keywords_grid_id').readData(v);
+                   this.value = v;
+                   this.el.dom.value = (v === null || v === undefined ? '' : v);
+                   this.validate();
 			    },
-			    getValue: function(){
-				Ext.getCmp('keywords_grid_id').writeData();
+                getRawValue: function(){
+                   var v = Ext.getCmp('keywords_grid_id').writeData();
+                   this.el.dom.value = (v === null || v === undefined ? '' : v);
+				   return v;
 			    }
 			}
 			]
@@ -1157,14 +1164,40 @@ Ext.onReady(function(){
 			    //checkboxToggle:true,
 			    collapsed: true,
 			    autoHeight:true,
-			    //defaults: {width: 530},
+			    width: 550,
 			    defaultType: 'textfield',
 			    layout: 'form',
-			    items: [{
-				xtype: 'textarea',
-				fieldLabel: 'Lineage',
-				name: 'lineage'
-			    },{
+
+               items:[{
+                  xtype: 'tabpanel',
+                  plain: true,
+                  activeTab: 0,
+                  autoHeight:true,
+                  deferredRender : false,
+                  defaults:   {autoScroll:true, autoHeight:true, bodyStyle:'padding:10px', width: 600,
+                               defaults: {
+                                  anchor: '97%',
+                                  msgTarget: 'side'
+                               }
+                              },
+			      items: [{
+				     title:'IT',
+				     layout:'form',
+				     items:[{
+				        xtype: 'textarea',
+				        fieldLabel: 'Lineage (IT)',
+				        name: 'lineage_it'
+				     }]
+			      },{
+				     title:'EN',
+				     layout:'form',
+				     items:[{
+				        xtype: 'textarea',
+				        fieldLabel: 'Lineage (EN)',
+				        name: 'lineage_en'
+				     }]
+                  }]
+               },{
 				xtype: 'numberfield',
 				allowDecimals: false,
 				fieldLabel: 'Spatail resolution - equivalent scale',

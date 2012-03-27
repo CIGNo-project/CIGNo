@@ -360,8 +360,8 @@ def rdfapi(request, action="read"):
                            's': s, 
                            'p': _predicate.subject, 
                            'o': _object.subject,
-                           'pl': _predicate.rdfs_label.first,
-                           'ol': _object.gn_name.first,
+                           'pl': lbyl(_predicate.rdfs_label),
+                           'ol': lbyl(_object.gn_name),
                            'd': True
                            })
 
@@ -375,8 +375,8 @@ def rdfapi(request, action="read"):
                              's': s, 
                              'p': _predicate.subject, 
                              'o': _object.subject,
-                             'pl': _predicate.rdfs_label.first,
-                             'ol': _object.rdfs_label.first,
+                             'pl': lbyl(_predicate.rdfs_label),
+                             'ol': lbyl(_object.rdfs_label),
                              'd': True
                              })
 
@@ -391,8 +391,8 @@ def rdfapi(request, action="read"):
                              's': s, 
                              'p': _predicate.subject, 
                              'o': _object.subject,
-                             'pl': _predicate.rdfs_label.first,
-                             'ol': _object.rdfs_label.first,
+                             'pl': lbyl(_predicate.rdfs_label),
+                             'ol': lbyl(_object.rdfs_label),
                              'd': False
                              })
     

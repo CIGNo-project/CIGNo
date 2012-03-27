@@ -352,7 +352,7 @@ class Inspire(models.Model):
         crdf = CignoRDF()
         features= { "type": "FeatureCollection", "features": []}
         geonamesids = []
-        if len(geonamesids) > 0:
+        if len(self.geonamesids) > 0:
             geonamesids = self.geonamesids.split(',')
         for id in geonamesids:
             gn = crdf.GeoNames('http://sws.geonames.org/%s/' % id)
@@ -374,13 +374,13 @@ class Inspire(models.Model):
         return features
 
     def syncGeonames(self):
-        Connection.objects.filter(s_url = self.get_public_url()).delete()
-        connection_type = ConnectionType.objects.get(url = surf.ns.DCTERMS['spatial'])
+        Connection.objects.filter(s_url = str(self.get_public_url())).delete()
+        connection_type = ConnectionType.objects.get(url = str(surf.ns.DCTERMS['spatial']))
         
         if self.geonamesids is not None:
             for id in self.geonamesids.split(','):
                 if id is not None and id.strip() != '':
-                    connection = Connection(s_url = self.get_public_url(), o_url = surf.ns.GNFEATURES['%s/' % id], connection_type = connection_type )
+                    connection = Connection(s_url = str(self.get_public_url()), o_url = str(surf.ns.GNFEATURES['%s/' % id]), connection_type = connection_type )
                     connection.save()
 
     def get_public_url(self):
@@ -991,6 +991,8 @@ def post_save_connection(instance, sender, **kwargs):
     # TODO: use a better test and test if already loaded
     if not instance.s_url.startswith(surf.ns.LOCAL):
       crdf.store.load_triples(source = instance.s_url)
+    if not instance.o_url.startswith(surf.ns.LOCAL):
+      crdf.store.load_triples(source = instance.o_url)
     crdf.add_triple(instance.s_url, instance.connection_type.url, instance.o_url)
 
 signals.post_save.connect(post_save_connection, sender=Connection)

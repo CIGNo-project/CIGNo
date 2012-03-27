@@ -23,10 +23,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 INSTALLED_APPS = (
     # cigno - required by admin-tools
-    'admin_tools',
-    'admin_tools.theming',
-    'admin_tools.menu',
-    'admin_tools.dashboard',
+    #'admin_tools',
+    #'admin_tools.theming',
+    #'admin_tools.menu',
+    #'admin_tools.dashboard',
     # geonode
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,7 +44,7 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'geonode',
     # cigno
-    'elfinder',
+    #'elfinder',
     'cigno.tools',
     'cigno.metadata',
     'cigno.mdtools',

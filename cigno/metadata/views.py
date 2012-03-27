@@ -156,6 +156,12 @@ def initialdata(resource):
     # initial = simplejson.dumps(simplejson.loads(serialized)[0]['fields'])
     initial = serialize_clean(resource)
 
+    # referencedate
+    count = 0
+    for t in  resource.referencedate_set.all():
+        initial.update(serialize_clean(t, 'referencedate_set-%s' % count))
+        count += 1
+    initial['referencedate_set'] = count
     # add temporalextent
     count = 0
     for t in  resource.temporalextent_set.all():
