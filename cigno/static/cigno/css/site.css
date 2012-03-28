@@ -170,3 +170,42 @@ padding: 4px 10px 4px 0;
 .form textarea{
     height: 100px;
 }
+
+/* button icons */
+/* left buttons */
+.resource-search-button {
+    background-image: url(../../geonode/theme/app/img/silk/magnifier.png) !important;
+}
+
+.layer-upload-button {
+    background-image: url(../../geonode/theme/app/img/silk/add.png) !important;
+}
+
+.maps-button {
+    background-image: url(../../geonode/theme/app/img/silk/map.png) !important;
+}
+
+.menu-button button {
+    font-size: 15px !important;
+    font-weight: bold !important;
+    color: #003C4C !important;
+}
+
+.menu-button td {
+    text-align: left !important;
+    padding: 0px !important;
+}
+
+.menu-button em {
+    padding: 3px !important;
+}
+
+.sitenavmenu {
+    background-color: #003C4C !important;
+    background-image: none !important;
+}
+
+.sitenavmenu span{
+    font-weight: bold !important;
+    color: #FFFFFF !important;
+}

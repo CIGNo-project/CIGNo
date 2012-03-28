@@ -6,6 +6,27 @@
     Ext.onReady(function(){
       var themeUrl = 'http://cigno.corila.it/static/cigno/externals/ext/resources/css/xtheme-grey.css' ;
       //Ext.util.CSS.swapStyleSheet("theme", themeUrl);
+       var menu = new Ext.menu.Menu({
+          id: 'uploadMenu',
+          cls: 'sitenavmenu',
+          items: [
+             {
+                text: 'Upload Geospatial Resource',
+                iconCls: 'layer-upload-button',
+                href: '{% url geonode.maps.views.upload_layer%}'
+             }, {
+                text: 'Upload Digital Resource',
+                iconCls: 'layer-upload-button',
+                href: '{% url cigno.metadata.views.resource_metadata%}'
+             }
+          ]
+       });
+       Ext.get('uploadMenu-el').on('click', function(e)
+                               {
+                                  menu.showAt(e.getXY());
+                               }
+                              );
+    
     });
   </script>
   {{ block.super }}
@@ -17,16 +38,17 @@
         <li class="home"><a href="{% url geonode.views.index %}">{% trans "Home" %}</a></li> 
         <!--li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Data" %}</a></li-->
         <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.search_page %}">{% trans "Search & Browse" %}</a></li>
+    {% if user.is_authenticated %}
+        <li class=""><a class="" id="uploadMenu-el" href="javascript:void(0);">{% trans "Upload" %}</a></li>
+    {% endif %}
         <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
     {% if user.is_authenticated %}
-	<li class=""><a class="" id="toolsLink" href="{% url geonode.maps.views.upload_layer%}">{% trans "Upload GeoData resource" %}</a></li>
-	<li class=""><a class="" id="toolsLink" href="{% url cigno.metadata.views.resource_metadata%}">{% trans "Upload digital resource" %}</a></li>
         <li class=""><a class="" id="profileLink" href="{% url profiles_profile_detail user.username %}">{% trans "Profile" %}</a></li>
     {% if user.is_staff %}
         <li class=""><a class="" id="adminLink" href="/admin/">{% trans "Admin" %}</a></li>
     {% endif %}
     {% if user.is_superuser %}
-	<li class=""><a class="" id="toolsLink" href="{% url cigno.tools.views.index %}">{% trans "Extra" %}</a></li>
+	    <li class=""><a class="" id="toolsLink" href="{% url cigno.tools.views.index %}">{% trans "Extra" %}</a></li>
     {% endif %}
 
     {% endif %}

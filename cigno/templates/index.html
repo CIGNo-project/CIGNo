@@ -1,7 +1,7 @@
 {% extends "page_layout.html" %}
 {% load i18n %}
 
-{% block title %} {% trans "CIGNo network: CORILA Node" %} - {{ block.super }} {% endblock %}
+{% block title %} {% trans "CIGNo network: ISMAR Node" %} - {{ block.super }} {% endblock %}
 {% block indexclass %} class="here" {% endblock %}
 
 {% block head %} 
@@ -9,34 +9,6 @@
 {{ block.super }}
 <script type="text/javascript" src="{{ STATIC_URL }}cigno/externals/slideshow/js/slideShow.js"></script>
     <style>
-    /* left buttons */
-    .search-button {
-        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/magnifier.png) !important;
-    }
-    .layer-upload-button {
-        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/add.png) !important;
-    }
-    .maps-button {
-        background-image: url({{ STATIC_URL }}geonode/theme/app/img/silk/map.png) !important;
-    }
-
-    .menu-button button {
-        font-size: 16px !important;
-        font-weight: bold !important;
-        color: #003C4C !important;
-    }
-
-    .menu-button td {
-        text-align: left !important;
-        padding: 0px !important;
-    }
-
-    .menu-button em {
-        padding: 3px !important;
-    }
-
-      
-
 
       * {margin: 0; padding:0; list-style: none;}
       
@@ -112,7 +84,7 @@ Ext.onReady(function(){
          padding: '0'
       },
       //autoHeight: true,                                                                                                                                                                                                                    
-      height: 200,
+      height: 250,
       defaultType: 'button',
       baseCls: 'x-plain',
       renderTo : 'left-button',
@@ -123,28 +95,28 @@ Ext.onReady(function(){
          width: '260',
          cls: 'menu-button',
          scale: 'large',
-         margins: '5 0 5 0'
+         margins: '10 0 10 0'
       },
       items:[{
-         text: 'Upload geospatial resource',
+         text: 'Search & Browse',
+         iconCls: 'resource-search-button',
+         handler: function() {
+            window.location = '{% url geonode.maps.views.search_page %}';
+         }
+      },{
+         text: 'Upload Geospatial Resource',
          iconCls: 'layer-upload-button',
          handler: function() {
             window.location = '{% url geonode.maps.views.upload_layer %}';
          }
       },{
-         text: 'Upload digital resource',
+         text: 'Upload Digital Resource',
          iconCls: 'layer-upload-button',
          handler: function() {
             window.location = '{% url cigno.metadata.views.resource_metadata %}';
          }
       },{
-         text: 'View resources',
-         iconCls: 'search-button',
-         handler: function() {
-            window.location = '{% url geonode.maps.views.search_page %}';
-         }
-      },{
-         text: 'Create and view maps',
+         text: 'Maps',
          iconCls: 'maps-button',
          handler: function() {
             window.location = '{% url geonode.maps.views.maps %}';
@@ -162,7 +134,7 @@ Ext.onReady(function(){
 <div class="twocol">
 <!-- TODO: i18n on the text here -->
   <div class="block">
-    <h2> {% trans "CIGNo network: CNR - ISMAR Node" %}  (Devel) </h2>
+    <h2> {% trans "CIGNo network: CNR - ISMAR Node" %}</h2>
     <p>
     {% blocktrans %} The CIGNo (Collaborative Interoperable Geographic
     Node) network aims at implementing a collaborative federated
@@ -211,8 +183,8 @@ Ext.onReady(function(){
 </div>
 {% endblock %}
 {% block sidebar %}
-<div class="threecol" style="text-align: center;">
-  <h3>CIGNo Partners</h3>
+<div class="threecol">
+  <h3  style="text-align: center;">CIGNo Partners</h3>
   <p>
     <a href="http://www.ismar.cnr.it/" target="_blank"><img src="{{ STATIC_URL }}cigno/img/logoISMAR_100.png" style="height: 70px; margin: 0 13px 0 13px;"/></a>
     <a href="http://www.corila.it/" target="_blank"><img src="{{ STATIC_URL }}cigno/img/logoCORILA_80.png" style="height: 60px; margin: 0 13px 0 13px;"/></a>
@@ -221,5 +193,13 @@ Ext.onReady(function(){
   <br/>
   <div id="left-button">
   </div>
+  <h3>{% trans "CIGNo's Web Services" %}</h3>
+  <p>{% trans "CIGNo's Web Services are available from the following URLs:" %}</p>
+  <ul>
+    <li><strong>{% trans "WMS:" %}</strong> <a href="{{GEOSERVER_BASE_URL}}wms?request=GetCapabilities&version=1.1.1&service=WMS">WMS 1.1.1</a></li>
+    <li><strong>{% trans "WFS:" %}</strong> <a href="{{GEOSERVER_BASE_URL}}wfs?request=GetCapabilities&version=1.1.0&service=WFS">WFS 1.1.0</a></li>
+    <li><strong>{% trans "CSW:" %}</strong> <a href="{{GEONETWORK_BASE_URL}}srv/en/csw?request=GetCapabilities&version=2.0.2&service=CSW">CSW 2.0.2</a></li>
+  </ul>
+
 </div>
 {% endblock %}

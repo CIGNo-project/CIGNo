@@ -19,6 +19,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     # required by django-admin-tools
     'django.core.context_processors.request',
+    # CIGNo
+    "cigno.context_processors.resource_urls",
     )
 
 INSTALLED_APPS = (
