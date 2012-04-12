@@ -18,7 +18,6 @@ from django.utils import translation
 from django.template import RequestContext, loader
 from django.views.decorators.csrf import csrf_exempt, csrf_response_exempt, csrf_protect
 from django.utils.translation import ugettext as _
-#from forms import ResourceUploadForm, ResourceUpload2Form, ResourceForm, ResourceSimpleForm, ResourceUpload2Form
 from forms import *
 import os
 import re
@@ -146,39 +145,49 @@ def serialize_clean(obj, prefix=None):
 
 
 def initialdata(resource):
-    for r in resource._meta.fields:
-        value = r.value_to_string(resource)
-        if value is not None:
-            # response[r.name] = r.value_to_string(resource)
-            # response[r.name] = r.value_from_object(resource)
-            pass
+    # for r in resource._meta.fields:
+    #    value = r.value_to_string(resource)
+    #    if value is not None:
+    #        # response[r.name] = r.value_to_string(resource)
+    #        # response[r.name] = r.value_from_object(resource)
+    #        pass
     # serialized = serializers.serialize("json", [resource])
     # initial = simplejson.dumps(simplejson.loads(serialized)[0]['fields'])
     initial = serialize_clean(resource)
-
-    # referencedate
-    count = 0
-    for t in  resource.referencedate_set.all():
-        initial.update(serialize_clean(t, 'referencedate_set-%s' % count))
-        count += 1
-    initial['referencedate_set'] = count
-    # add temporalextent
-    count = 0
-    for t in  resource.temporalextent_set.all():
-        initial.update(serialize_clean(t, 'temporalextent_set-%s' % count))
-        count += 1
-    initial['temporalextent_set'] = count
-    # responsible party
-    count = 0
-    for t in  resource.responsiblepartyrole_set.all():
-        initial.update(serialize_clean(t, 'responsiblepartyrole_set-%s' % count))
-        count += 1
-    initial['responsiblepartyrole_set'] = count
-    count = 0
-    for t in  resource.mdresponsiblepartyrole_set.all():
-        initial.update(serialize_clean(t, 'mdresponsiblepartyrole_set-%s' % count))
-        count += 1
-    initial['mdresponsiblepartyrole_set'] = count
+    # parent
+    for parent in resource._meta.get_parent_list():
+        field = resource._meta.get_ancestor_link(parent)
+        initial.update(serialize_clean(getattr(resource, field.name)))
+    #inline
+    for Inline in resource._meta.get_all_related_objects():
+        count = 0
+        for r in getattr(resource, Inline.get_accessor_name()).all():
+            initial.update(serialize_clean(r, '%s-%s' % (Inline.get_accessor_name(), count)))
+            count += 1
+        initial[Inline.get_accessor_name()] = count
+    # # referencedate
+    # count = 0
+    # for t in  resource.referencedate_set.all():
+    #     initial.update(serialize_clean(t, 'referencedate_set-%s' % count))
+    #     count += 1
+    # initial['referencedate_set'] = count
+    # # add temporalextent
+    # count = 0
+    # for t in  resource.temporalextent_set.all():
+    #     initial.update(serialize_clean(t, 'temporalextent_set-%s' % count))
+    #     count += 1
+    # initial['temporalextent_set'] = count
+    # # responsible party
+    # count = 0
+    # for t in  resource.responsiblepartyrole_set.all():
+    #     initial.update(serialize_clean(t, 'responsiblepartyrole_set-%s' % count))
+    #     count += 1
+    # initial['responsiblepartyrole_set'] = count
+    # count = 0
+    # for t in  resource.mdresponsiblepartyrole_set.all():
+    #     initial.update(serialize_clean(t, 'mdresponsiblepartyrole_set-%s' % count))
+    #     count += 1
+    # initial['mdresponsiblepartyrole_set'] = count
 
     # many2many
     initial['topic_category_ext_str'] = ",".join("%s" % tup for tup in resource.topic_category_ext.values_list('id'))
@@ -189,6 +198,53 @@ def initialdata(resource):
     
     return initial
 
+
+## override layer_metadata
+@csrf_exempt
+@login_required
+def layerext_metadata(request, layername):
+    layer = get_object_or_404(Layer, typename=layername)
+    if request.user.is_authenticated():
+        if not request.user.has_perm('maps.change_layer', obj=layer):
+            return HttpResponse(loader.render_to_string('401.html', 
+                RequestContext(request, {'error_message': 
+                    _("You are not permitted to modify this layer's metadata")})), status=401)
+
+        if request.method == "POST":
+            form = LayerExtForm(request.POST, instance=layer.layerext)
+        else:
+            # form = LayerExtForm(instance=layer)
+            initial = initialdata(layer.layerext)
+
+            return render_to_response('metadata/layerext_metadata.html',
+                                      RequestContext(request, { #"formset": formset,
+                        'all_licenses': ALL_LICENSES,
+                        #'initial': simplejson.dumps(response, cls=DjangoJSONEncoder, indent=4)
+                        'initial': simplejson.dumps(initial)
+                        }))
+
+        if request.method == "POST" and form.is_valid():
+            saved_resource = form.save(commit=False)
+            #saved_resource.set_owner(request.user)
+            saved_resource.save()
+            #saved_resource.set_default_permissions()
+            
+            save_metadata_related(request, saved_resource)
+            
+            return HttpResponse(json.dumps({
+                        "success": True,
+                        #"redirect_to": saved_resource.get_absolute_url() + "?describe"
+                        "redirect_to": saved_resource.get_absolute_url()
+                        }))
+        else:
+            errors = []
+            for f, e in form.errors.items():
+                errors.extend([escape("%s: %s" % (f, v)) for v in e])
+            return HttpResponse(json.dumps({ "success": False, "errors": errors}))
+
+
+from django.utils.html import escape
+import os, shutil
 
 @login_required
 @csrf_exempt
@@ -217,72 +273,22 @@ def resource_metadata(request, resourceid = None):
                                                            }))
 
     elif request.method == 'POST':
-        from django.utils.html import escape
-        import os, shutil
-
         if resource is not None:
-            form = ResourceUpload2Form(request.POST, request.FILES, instance=resource)
+            form = ResourceForm(request.POST, request.FILES, instance=resource)
         else:
-            form = ResourceUpload2Form(request.POST, request.FILES)
+            form = ResourceForm(request.POST, request.FILES)
 
         tempdir = None
         if form.is_valid():
             saved_resource = form.save(commit=False)
-            saved_resource.set_owner(request.user)
-            upload_mode = request.POST.get('upload_mode')
-            if upload_mode == 'upload':
-                name, __ = os.path.splitext(form.cleaned_data["base_file"].name)
-                saved_resource.name = get_valid_name(name)
-            elif upload_mode == 'link':
-                url = urlparse(form.cleaned_data["url_field"])
-                saved_resource.name = get_valid_name(url.path or url.netloc)
+            if resource is None:
+                saved_resource.set_owner(request.user)
             saved_resource.save()
-            saved_resource.set_default_permissions()
-            # save manytomany
-            # form.save_m2m()
-            topic_category_ext_str =  request.POST.get('topic_category_ext_str', None)
-            if topic_category_ext_str is not None and len(topic_category_ext_str.strip())>0:
-                saved_resource.topic_category_ext.remove(*saved_resource.topic_category_ext.all())
-                saved_resource.topic_category_ext.add(*topic_category_ext_str.split(','))
-
-            presentation_form_str =  request.POST.get('presentation_form_str', None)
-            if presentation_form_str is not None and len(presentation_form_str.strip())>0:
-                saved_resource.presentation_form.remove(*saved_resource.presentation_form.all())
-                saved_resource.presentation_form.add(*presentation_form_str.split(','))
-
-            distribution_format_str =  request.POST.get('distribution_format_str', None)
-            if distribution_format_str is not None and len(distribution_format_str.strip())>0:
-                saved_resource.distribution_format.remove(*saved_resource.distribution_format.all())
-                saved_resource.distribution_format.add(*distribution_format_str.split(','))
-
-            spatial_representation_type_ext_str =  request.POST.get('spatial_representation_type_ext_str', None)
-            if spatial_representation_type_ext_str is not None and len(spatial_representation_type_ext_str.strip())>0:
-                saved_resource.spatial_representation_type_ext.remove(*saved_resource.spatial_representation_type_ext.all())
-                saved_resource.spatial_representation_type_ext.add(*spatial_representation_type_ext_str.split(','))
-
-            # save inline
-            formset = ResourceReferenceDateInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='referencedate_set')
-            if formset.is_valid():
-                saved_resource.referencedate_set.all().delete()
-                formset.save()
-                
-            formset = ResourceTemporalExtentInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='temporalextent_set')
-            if formset.is_valid():
-                saved_resource.temporalextent_set.all().delete()
-                formset.save()
-
-            formset = ResourceResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='responsiblepartyrole_set')
-            if formset.is_valid():
-                saved_resource.responsiblepartyrole_set.all().delete()
-                formset.save()
-
-            formset = ResourceMdResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='mdresponsiblepartyrole_set')
-            if formset.is_valid():
-                saved_resource.mdresponsiblepartyrole_set.all().delete()
-                formset.save()
-            else:
-                errors = formset.errors
-
+            if resource is None:
+                saved_resource.set_default_permissions()
+            
+            save_metadata_related(request, saved_resource)
+            
             return HttpResponse(json.dumps({
                         "success": True,
                         #"redirect_to": saved_resource.get_absolute_url() + "?describe"
@@ -293,6 +299,79 @@ def resource_metadata(request, resourceid = None):
             for e in form.errors.values():
                 errors.extend([escape(v) for v in e])
             return HttpResponse(json.dumps({ "success": False, "errors": errors}))
+
+from django.forms.models import modelformset_factory, inlineformset_factory
+
+def save_metadata_related(request, saved_resource):
+    # save manytomany
+    # form.save_m2m()
+    names = ['topic_category_ext', 'presentation_form', 'distribution_format', 'spatial_representation_type_ext']
+    for name in names:
+        name_str = "%s_str" % name
+        value = request.POST.get(name_str, None)
+        if value is not None and len(value.strip())>0:
+            attr = getattr(saved_resource, name)
+            attr.remove(*attr.all())
+            attr.add(*value.split(','))
+
+    # save inline
+    names = ['temporalextent_set', 'referencedate_set', 'responsiblepartyrole_set', 'mdresponsiblepartyrole_set']
+    for Inline in saved_resource._meta.get_all_related_objects():
+        if Inline.get_accessor_name() in names:
+            InlineFormSet = inlineformset_factory(saved_resource.__class__, Inline.model)
+            formset = InlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix=Inline.get_accessor_name())
+            if formset.is_valid():
+                getattr(saved_resource, Inline.get_accessor_name()).all().delete()
+                formset.save()
+            else:
+                errors = formset.errors
+
+        
+    # topic_category_ext_str =  request.POST.get('topic_category_ext_str', None)
+    # if topic_category_ext_str is not None and len(topic_category_ext_str.strip())>0:
+    #     saved_resource.topic_category_ext.remove(*saved_resource.topic_category_ext.all())
+    #     saved_resource.topic_category_ext.add(*topic_category_ext_str.split(','))
+
+    # presentation_form_str =  request.POST.get('presentation_form_str', None)
+    # if presentation_form_str is not None and len(presentation_form_str.strip())>0:
+    #     saved_resource.presentation_form.remove(*saved_resource.presentation_form.all())
+    #     saved_resource.presentation_form.add(*presentation_form_str.split(','))
+
+    # distribution_format_str =  request.POST.get('distribution_format_str', None)
+    # if distribution_format_str is not None and len(distribution_format_str.strip())>0:
+    #     saved_resource.distribution_format.remove(*saved_resource.distribution_format.all())
+    #     saved_resource.distribution_format.add(*distribution_format_str.split(','))
+
+    # spatial_representation_type_ext_str =  request.POST.get('spatial_representation_type_ext_str', None)
+    # if spatial_representation_type_ext_str is not None and len(spatial_representation_type_ext_str.strip())>0:
+    #     saved_resource.spatial_representation_type_ext.remove(*saved_resource.spatial_representation_type_ext.all())
+    #     saved_resource.spatial_representation_type_ext.add(*spatial_representation_type_ext_str.split(','))
+
+
+    # formset = ResourceReferenceDateInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='referencedate_set')
+    # if formset.is_valid():
+    #     saved_resource.referencedate_set.all().delete()
+    #     formset.save()
+                
+    # formset = ResourceTemporalExtentInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='temporalextent_set')
+    # if formset.is_valid():
+    #     saved_resource.temporalextent_set.all().delete()
+    #     formset.save()
+
+    # formset = ResourceResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='responsiblepartyrole_set')
+    # if formset.is_valid():
+    #     saved_resource.responsiblepartyrole_set.all().delete()
+    #     formset.save()
+
+    # formset = ResourceMdResponsiblePartyRoleInlineFormSet(request.POST, request.FILES, instance=saved_resource, prefix='mdresponsiblepartyrole_set')
+    # if formset.is_valid():
+    #     saved_resource.mdresponsiblepartyrole_set.all().delete()
+    #     formset.save()
+    # else:
+    #     errors = formset.errors
+
+    # TODO: check for errors
+    return True
     
 
 @login_required

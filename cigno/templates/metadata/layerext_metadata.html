@@ -1,0 +1,50 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {{ layer.typename }} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+{% include "geonode/app_header.html" %}
+{% include "geonode/geo_header.html" %}
+<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
+<script type="text/javascript" src="/static/cigno/js/ResourceForm.js"></script>
+{{ block.super }}
+{% endblock %}
+{% block main %}
+<div class="twocol">
+  <h2> {% trans "Editing details for " %} {{ layer.typename }} </h2>
+  <div id="metadata_form">
+  </div>
+
+</div>
+<script type="text/javascript">
+{% autoescape off %}
+
+var form_target = "{{ request.get_full_path }}";
+var xml_unsafe = /(^[^a-zA-Z\._]+)|([^a-zA-Z0-9\._])/g;
+var permissionsField = new Ext.form.Label({
+   html: ""
+});
+
+var initial = {{ initial }};
+//var initial = {};
+
+var fp = new Ext.ResourceForm({
+   id: 'resource_form',
+   renderTo: 'metadata_form',
+   geospatial: true,
+   width: 600,
+   permissionsField: permissionsField,
+   gemetLanguage: '{{ LANGUAGE_CODE }}',
+   listeners: {                 
+	  afterrender: function() {
+         this.loadData(initial);
+	  }
+   }
+});
+
+
+{% endautoescape %} 
+</script>
+{% endblock %}

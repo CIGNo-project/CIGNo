@@ -16,12 +16,6 @@ class JSONField(forms.CharField):
             raise forms.ValidationError("this field must be valid JSON")
 
 
-class ResourceForm(forms.ModelForm):
-    resource_files = ("base_file",)
-    class Meta:
-        model = Resource
-        exclude = ('uuid',)
-
 class ResourceUploadForm(forms.ModelForm):
     #resource_files = ("base_file",)
     class Meta:
@@ -42,7 +36,13 @@ class ResourceSimpleForm(forms.ModelForm):
                   'gemetkeywords',
                   )
 
-class ResourceUpload2Form(forms.ModelForm):
+# class ResourceForm(forms.ModelForm):
+#     resource_files = ("base_file",)
+#     class Meta:
+#         model = Resource
+#         exclude = ('uuid',)
+
+class ResourceForm(forms.ModelForm):
     resource_files = ("base_file",)
     class Meta:
         model = Resource
@@ -53,9 +53,17 @@ class ResourceUpload2Form(forms.ModelForm):
     ### TODO manage permissions
     #permissions = JSONField()
 
-from django.forms.models import modelformset_factory, inlineformset_factory
-ResourceReferenceDateInlineFormSet = inlineformset_factory(Resource, ResourceReferenceDate)
-ResourceTemporalExtentInlineFormSet = inlineformset_factory(Resource, ResourceTemporalExtent)
-ResourceResponsiblePartyRoleInlineFormSet = inlineformset_factory(Resource, ResourceResponsiblePartyRole)
-ResourceMdResponsiblePartyRoleInlineFormSet = inlineformset_factory(Resource, ResourceMdResponsiblePartyRole)
+class LayerExtForm(forms.ModelForm):
+    class Meta:
+        model = LayerExt
+        # TODO: use default language (configure resource_upload.html)
+        fields = ('titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'use_limitation', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext')
+        #exclude = ('uuid','name')
+
+
+# from django.forms.models import modelformset_factory, inlineformset_factory
+# ResourceReferenceDateInlineFormSet = inlineformset_factory(Resource, ResourceReferenceDate)
+# ResourceTemporalExtentInlineFormSet = inlineformset_factory(Resource, ResourceTemporalExtent)
+# ResourceResponsiblePartyRoleInlineFormSet = inlineformset_factory(Resource, ResourceResponsiblePartyRole)
+# ResourceMdResponsiblePartyRoleInlineFormSet = inlineformset_factory(Resource, ResourceMdResponsiblePartyRole)
 

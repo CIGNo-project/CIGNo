@@ -50,7 +50,6 @@ Ext.onReady(function() {
   {% endfor %}
 </p>
 <hr/>
-{% if md.use_limitation %}<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("-") }}</p>{% endif %}
 {% if md.access_constraints %}<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>{% endif %}
 <p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("<a href='http://creativecommons.org/licenses/by-nc/3.0/it/deed.it'>Creative Commons Attribuzione - Non commerciale 3.0</a>") }}</p>
 {% if md.other_constraints %}<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>{% endif %}

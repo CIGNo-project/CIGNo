@@ -14,6 +14,8 @@ urlpatterns += patterns('cigno.metadata.views',
                         (r'^resource/upload$', 'resource_metadata'),
                         (r'^resource/(?P<resourceid>[^/]*)$', 'resource_detail'),
                         (r'^resource/(?P<resourceid>[^/]*)/metadata$', 'resource_metadata'),
+                        # override
+                        url(r'^layerext/(?P<layername>[^/]*)/metadata$', 'layerext_metadata', name="layerext_metadata"),
                         (r'^resource/(?P<resourceid>[^/]*)/remove$', 'resource_remove'),
                         (r'^resource/(?P<resourceid>[^/]*)/ajax-permissions$', 'ajax_resource_permissions'),
                         (r'^api/(?P<model>[^/]*)/$', 'api'),

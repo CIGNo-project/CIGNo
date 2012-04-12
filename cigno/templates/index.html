@@ -134,9 +134,24 @@ Ext.onReady(function(){
 <div class="twocol">
 <!-- TODO: i18n on the text here -->
   <div class="block">
-    <h2> {% trans "CIGNo network: CNR - ISMAR Node" %}</h2>
+    <h2> {% trans "Welcome to CIGNo portal  (Collaborative Interoperable Geographic Node)" %}</h2>
+    {% blocktrans %} <p>The CIGNO system is proposed to implement a
+    system for heterogeneous multimedia data and metadata management
+    (scientific and geographical, textual documents, tables, etc...)
+    whose use can help users (stakeholders, administrators,
+    scientists) to increase the knowledge.</p>
+
+    <p>The CIGNO system allows to create a catalog of metadata and data,
+    both geographic and non, through the upload by the user, it allows
+    the creation of servizidi sharing standards (OGC wms, wcs, wfs)
+    and the eventual downolad of the resource.  CIGNO also allows the
+    composition and visualization of maps created using geographic
+    data available on CIGNO or on external servers.</p>
+    {% endblocktrans %} 
+
+    {% comment %}
     <p>
-    {% blocktrans %} The CIGNo (Collaborative Interoperable Geographic
+    The CIGNo (Collaborative Interoperable Geographic
     Node) network aims at implementing a collaborative federated
     system to manage heterogeneous multimedia data (scientific and
     geographic, textual documents, measurements tables, programs to
@@ -149,8 +164,7 @@ Ext.onReady(function(){
       <a href="http://www.ismar.cnr.it/index_html-1?set_language=en&cl=en">CNR-ISMAR</a>
       and <a href="http://www.silvenezia.it">Venice Lagoon Atlas</a>
     </p>
-    {% endblocktrans %}
-  </p>
+    {% endcomment %}
   </div>
 
   <div id="slideshow-container" class="block">

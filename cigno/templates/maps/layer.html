@@ -412,12 +412,12 @@ Ext.onReady(function() {
         <ul>
 			{% if user.is_authenticated %}
         {% if can_change %}
-        <!--li> <a href="{% url layer_metadata layer.typename %}">
+        <li> <a href="{% url layerext_metadata layer.typename %}">
             {% trans "Update the description of this data" %}
-        </a> </li-->
-        <li><a href="/admin/metadata/layerext/{{layer.pk}}/">
+        </a> </li>
+        <!--li><a href="/admin/metadata/layerext/{{layer.pk}}/">
 	    {% trans "Update the description of this data" %}
-	</a></li>
+        </a></li-->
         <li> <a href="{% url layer_replace layer.typename %}">
             {% trans "Upload a new version of this data" %}
         </a></li>

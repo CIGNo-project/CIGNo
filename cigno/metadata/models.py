@@ -834,7 +834,6 @@ signals.post_save.connect(post_save_layerext, sender=LayerExt)
 class OnlineResource(models.Model):
     metadata               = models.ForeignKey(LayerExt)
     url                    = models.URLField(max_length=400)
-
     class Meta:
          verbose_name = _(u"Online resource")
          verbose_name_plural = _(u"Online resources")
