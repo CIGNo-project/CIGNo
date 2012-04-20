@@ -68,6 +68,7 @@ Cigno.KeywordsGrid2 = Ext.extend(Ext.grid.GridPanel, {
 		       if (!button.win) {
 			      button.win = new Ext.Window({
 			         title: 'GEMET Thesaurus',
+				 closeAction: 'hide',
 			         closable: true,
 			         width: 600,
 			         height: 450,

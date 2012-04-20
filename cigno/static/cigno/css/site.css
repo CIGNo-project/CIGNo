@@ -34,12 +34,25 @@ span.remote-layer {
 #infovis div{
     font-family: "Lucida Grande",Verdana;
 }
-#infovis .node{
-   width: 150px;
-}
+#infovis .node { 
+    width: 150px;
+    color: white; 
+    font-weight: bold;
+    /*background-color:transparent; */
+    text-shadow: 2px 2px #003c4c;
+} 
+#infovis .node:hover { 
+    color: #222 !important; 
+    background-color: white; 
+    opacity:1; 
+    z-index: 110 !important;
+    text-shadow: none;
+} 
+
 #inner-details p{
     margin: 5px;
 }
+
 /* end layer and resources */
 
 

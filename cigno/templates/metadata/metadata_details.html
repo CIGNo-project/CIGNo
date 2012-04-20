@@ -29,7 +29,7 @@ Ext.onReady(function() {
 <p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|default:_("-") }} </p>
 <p style="display:block; margin:0 auto; text-align:center;" > 
   {% if md.thumbnail_exists %}
-  <a href="{{link}}"><img src="{{ md.thumbnail_exists }}"/></a>
+  <a href="{{md.download_links.0.2}}"><img src="{{ md.thumbnail_exists }}"/></a>
   {% endif %}
 </p>
 <p> <strong>{% firstof fl.referencedate fl.resourcereferencedate %}</strong>
