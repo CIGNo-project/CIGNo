@@ -102,31 +102,67 @@ function initgraph(json){
 	onCreateLabel: function(domElement, node){  
 	    domElement.innerHTML = node.name;  
 	    $jit.util.addEvent(domElement, 'click', function () {  
+		ht.controller.loadNode(node);
+// 		Ext.Ajax.request({
+//                     url: '/mdtools/rdf/graph/',
+//                     params: {
+// 			s: node.data.url
+//                     },
+//                     success: function(response, options){
+// 			var trueGraph = Ext.util.JSON.decode(response.responseText);
+// 			//perform sum animation.  
+// 			ht.op.sum(trueGraph, {  
+// 			    type: 'fade:seq',  
+// 			    fps: 30,  
+// 			    duration: 1000,
+// 			    onComplete: function() {
+// 				ht.onClick(node.id, {  
+// 				    onComplete: function() {  
+// 					ht.controller.onComplete();  
+// 				    }  
+// 				});  
+// 			    }
+// 			});  
+//                     }
+// 		});
+	    });  
+	},  
+	loadNode: function(node){
+	    if(!ht.loadedNode){
+		    ht.loadedNode = {} ;
+	    }
+	    if(!(node.data.url in ht.loadedNode)){
 		Ext.Ajax.request({
-                    url: '/mdtools/rdf/graph/',
+		    url: '/mdtools/rdf/graph/',
                     params: {
 			s: node.data.url
                     },
-                    success: function(response, options){
-			var trueGraph = Ext.util.JSON.decode(response.responseText);
-			//get animation type.  
-			//perform sum animation.  
-			ht.op.sum(trueGraph, {  
-			    type: 'fade:seq',  
-			    fps: 30,  
-			    duration: 1000,
-			    onComplete: function() {
-				ht.onClick(node.id, {  
-				    onComplete: function() {  
-					ht.controller.onComplete();  
-				    }  
-				});  
-			    }
-			});  
+		    success: function(response, options){
+                        var trueGraph = Ext.util.JSON.decode(response.responseText);
+                        //perform sum animation.
+			ht.op.sum(trueGraph, {
+                            type: 'fade:seq',
+                            fps: 30,
+                            duration: 1000,
+                            onComplete: function() {				
+                                ht.onClick(node.id, {
+                                    onComplete: function() {
+                                        ht.controller.onComplete();
+                                    }
+                                });
+				ht.loadedNode[node.data.url] = true;
+                            }
+                        });
                     }
 		});
-	    });  
-	},  
+	    } else {
+                ht.onClick(node.id, {
+                    onComplete: function() {
+                        ht.controller.onComplete();
+                    }
+                });
+	    }
+	},
 	onPlaceLabel: function(domElement, node){
 	    var style = domElement.style;  
 	    style.display = '';  
