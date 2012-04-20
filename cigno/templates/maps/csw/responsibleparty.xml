@@ -1,6 +1,6 @@
 <gmd:CI_ResponsibleParty>
   <gmd:individualName {% if not poc.responsible_party.surname %}gco:nilReason="missing"{% endif %}>
-    {% if poc.responsible_party.surname %} <gco:CharacterString>{{ poc.responsible_party.title }} {{ poc.responsible_party.name }} {{ poc.responsible_party.surname }}</gco:CharacterString> {% endif %}
+    {% if poc.responsible_party.surname %} <gco:CharacterString>{{ poc.responsible_party.title|default:"" }} {{ poc.responsible_party.name|default:"" }} {{ poc.responsible_party.surname }}</gco:CharacterString> {% endif %}
   </gmd:individualName>
   <gmd:organisationName {% if not poc.responsible_party.organization_name %}gco:nilReason="missing"{% endif %}>
     {% if poc.responsible_party.organization_name %} <gco:CharacterString>{{ poc.responsible_party.organization_name }}</gco:CharacterString> {% endif %}
