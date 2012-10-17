@@ -1,5 +1,6 @@
 {% extends "page_layout.html" %}
 {% load i18n %}
+{% load media %}
 
 {% block title %} {{ layer.typename }} - {{ block.super }} {% endblock %}
 
@@ -7,8 +8,9 @@
 {% include "geonode/ext_header.html" %}
 {% include "geonode/app_header.html" %}
 {% include "geonode/geo_header.html" %}
-<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
-<script type="text/javascript" src="/static/cigno/js/ResourceForm.js"></script>
+
+{% include_media 'cigno.js' %}
+
 {{ block.super }}
 {% endblock %}
 {% block main %}

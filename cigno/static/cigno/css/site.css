@@ -1,7 +1,43 @@
-/* customize search-table */
-span.remote-layer {
-    background-image: none;
+.temporalextent-controls .temporalextent-enabled{
+    font-weight: bold;
 }
+.temporalextent-expand p{
+   font-size: 0.95em; 
+}
+
+.temporalextent-expand input{
+   font-size: 0.95em; 
+   width: 75px;
+}
+
+/* customize search-table */
+/*span.remote-layer {
+    background-image: none;
+}*/
+
+span.vector-layer,
+span.raster-layer,
+span.pdf-resource,
+span.generic-resource {
+    background-repeat:no-repeat;
+    padding-left: 18px;
+    padding-top: 2px;
+    padding-bottom:2px;
+}
+
+span.vector-layer {   
+    background-image: url(../../geonode/theme/app/img/geosilk/vector.png)
+}
+span.raster-layer {
+    background-image: url(../../geonode/theme/app/img/geosilk/raster.png)
+}
+span.pdf-resource {
+    background-image: url(../../geonode/theme/app/img/silk/page_white_acrobat.png)
+}
+span.generic-resource {
+    background-image: url(../../geonode/theme/app/img/silk/page_white.png)
+}
+
 
 /* start layer and resources */
   #id_comment {

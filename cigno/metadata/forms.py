@@ -60,6 +60,11 @@ class LayerExtForm(forms.ModelForm):
         fields = ('titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'use_limitation', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext')
         #exclude = ('uuid','name')
 
+class ResponsiblePartyForm(forms.ModelForm):
+    class Meta:
+        model = ResponsibleParty
+        fields = ('organization_name_it', 'office_it', 'name', 'surname')
+
 
 # from django.forms.models import modelformset_factory, inlineformset_factory
 # ResourceReferenceDateInlineFormSet = inlineformset_factory(Resource, ResourceReferenceDate)

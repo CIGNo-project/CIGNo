@@ -13,3 +13,6 @@ poster
 django-admin-tools
 django-extensions
 django-piston
+html5lib
+django-mediagenerator
+

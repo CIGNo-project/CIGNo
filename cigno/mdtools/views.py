@@ -36,7 +36,7 @@ def _inspire_validator(uuid):
     body = etree.tostring(md_metadata)
     mp = MultipartParam('dataFile',body,filename='test.xml',filetype='text/xml',filesize=len(body))
     datagen, headers = multipart_encode([mp])
-    request = urllib2.Request("http://www.inspire-geoportal.eu/INSPIREValidatorService/resources/validation/inspire", datagen, headers)
+    request = urllib2.Request("http://inspire-geoportal.ec.europa.eu/INSPIREValidatorService/resources/validation/inspire", datagen, headers)
     register_openers()
     response = urllib2.urlopen(request).read()
     return response

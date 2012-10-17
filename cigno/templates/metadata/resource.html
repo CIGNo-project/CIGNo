@@ -5,6 +5,7 @@
 {% load comments %}
 {% endcomment %}
 {% load mdtools %}
+{% load media %}
 
 {% block title %} {{ md.title }} - {{ block.super }} {% endblock %}
 
@@ -14,28 +15,7 @@
 {% include "geonode/geo_header.html" %}
 
 
-<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
-
-<!-- TODO: move on geonode-client after devel -->
-<!--script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/SelectFeature.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/Feature.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Anchored.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Framed.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/FramedCloud.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Util.js"></script-->  
-
-<!--script type="text/javascript" src="/static/cigno/js/RelationsManager.js"></script-->  
-
-<!-- JIT Library File -->
-<!--script type="text/javascript" src="/static/cigno/externals/jit/js/jit-yc.js"></script-->
-
-<!-- GeoNames -->
-<!--script type="text/javascript" src="/static/cigno/externals/GeoExt.ux/GeoNamesSearchCombo.js"></script>  
-<script type="text/javascript" src="/static/cigno/js/GeoNamesSearchCombo.js"></script-->  
-
-
-<!--link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" /-->
+{% include_media 'cigno.js' %}
 
 <style>
   .newline {

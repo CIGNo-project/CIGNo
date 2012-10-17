@@ -4,18 +4,18 @@
   <link rel="stylesheet" type="text/css" id="theme" href=""/>
   <script>
     Ext.onReady(function(){
-      var themeUrl = 'http://cigno.ve.ismar.cnr.it/static/cigno/externals/ext/resources/css/xtheme-cigno.css' ;
-       Ext.util.CSS.swapStyleSheet("theme", themeUrl);
+       //var themeUrl = 'http://cigno.ve.ismar.cnr.it/static/cigno/externals/ext/resources/css/xtheme-cigno.css' ;
+       //Ext.util.CSS.swapStyleSheet("theme", themeUrl);
        var menu = new Ext.menu.Menu({
           id: 'uploadMenu',
           cls: 'sitenavmenu',
           items: [
              {
-                text: 'Upload Geospatial Resource',
+                text: '{% trans "Upload Geospatial Resource" %}',
                 iconCls: 'layer-upload-button',
                 href: '{% url geonode.maps.views.upload_layer%}'
              }, {
-                text: 'Upload Digital Resource',
+                text: '{% trans "Upload Digital Resource" %}',
                 iconCls: 'layer-upload-button',
                 href: '{% url cigno.metadata.views.resource_metadata%}'
              }
@@ -35,7 +35,7 @@
 
   {% block nav %}
     <ul id="sitenav" class="selfclear">
-        <li class="home"><a href="{% url geonode.views.index %}">{% trans "Home" %}</a></li> 
+        <li class="home"><a href="{% url home %}">{% trans "Home" %}</a></li> 
         <!--li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Data" %}</a></li-->
         <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.search_page %}">{% trans "Search & Browse" %}</a></li>
     {% if user.is_authenticated %}
@@ -55,3 +55,14 @@
 
     </ul>
    {% endblock %}
+
+
+    {% block footer %}
+    <div class="onecol">
+      {% trans "Data License" %} <a href="/license/ismar/">{% trans "ISMAR License" %} </a>
+      | <strong>{% trans "Need Help?" %}</strong>
+      <a href="{% url help %}">{% trans "Help" %}</a>
+      | <a href="{% url dev %}">{% trans "For Developers" %}</a>
+    </div>
+    {% endblock %}
+    

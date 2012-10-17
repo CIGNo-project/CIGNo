@@ -19,7 +19,7 @@ class CustomMenu(Menu):
     def __init__(self, **kwargs):
         Menu.__init__(self, **kwargs)
         self.children += [
-            items.MenuItem(_('Home'), reverse('geonode.views.index')),
+            items.MenuItem(_('Home'), reverse('home')),
             items.MenuItem(_('Data'), reverse('geonode.maps.views.search_page')),
             items.MenuItem(_('Maps'), reverse('geonode.maps.views.maps')),
             items.MenuItem(_('Tools'), reverse('cigno.tools.views.index')),

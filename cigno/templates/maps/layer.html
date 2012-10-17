@@ -1,10 +1,11 @@
 {% extends "page_layout.html" %}
 {% load geonode_auth %}
 {% load i18n %}
-{% comment %}
-{% load comments %}
-{% endcomment %}
+{% load dialogos_tags %}
+{% load agon_ratings_tags %}
 {% load mdtools %}
+{% load media %}
+{% load cigno_utils %}
 
 {% block title %} {{ layer.layerext.title|default:layer.typename }} - {{ block.super }} {% endblock %}
 
@@ -12,12 +13,10 @@
 {% include "geonode/ext_header.html" %}
 {% include "geonode/app_header.html" %}
 {% include "geonode/geo_header.html" %}
-<script type="text/javascript" src="/static/cigno/js/RelationsManager.js"></script>  
 
-<!-- JIT Library File -->
-<script type="text/javascript" src="/static/cigno/externals/jit/js/jit-yc.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" />
 
-<!--link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" /-->
+{% include_media 'cigno.js' %}
 
 <style>
   #id_comment {
@@ -207,6 +206,18 @@ Ext.onReady(function() {
     </script>
 {% endblock %}
 
+{% block start_body_js %}
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+{% endblock %}
+
+
 {% block main %}
 <div class="twocol">
 {% comment %}
@@ -297,8 +308,15 @@ Ext.onReady(function() {
     color: #999999;
 }
 </style>
-{% with layer.layerext.field_labels as fl %}{% with layer.layerext as md %}
-<div id="description"> <h3> {{ layer.layerext.titleml|default:layer.typename }} </h3> </div>
+{% with '1' as is_layer %}{% with layer.layerext.field_labels as fl %}{% with layer.layerext as md %}
+<div id="description"> 
+  <h3> {{ layer.layerext.titleml|default:layer.typename }} </h3> 
+  {% overall_rating layer "layer" as layer_rating %}
+  <div class="overall_rating" data-rating="{{ layer_rating }}"></div>
+  <g:plusone size="small" href="http://{{ request.get_host }}{{ request.get_full_path }}"></g:plusone>
+  <div class="fb-like" data-href="http://{{ request.get_host }}{{ request.get_full_path }}" data-send="false" data-width="50" data-layout="button_count" data-show-faces="false"></div>
+</div>
+
 {% if md.source_document %}
 <p id="data_ops">
 <span class="export">{% trans "Download resource" %}:</span>
@@ -306,15 +324,59 @@ Ext.onReady(function() {
 <span class="newline_detail">{{ md.source_document.url|urlize }}</span>
 </p>
 {% endif %}
-<p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|truncatewords:30|default:_("No abstract for this layer.") }} </p>
-
-<div id="preview_map"></div>
+{% comment %}
+<p> <strong>{{ fl.abstract }}:</strong> {{ md.abstractml|sanitize|truncatewords:30|default:_("No abstract for this layer.") }} </p>
+{% endcomment %}
+<!--div id="preview_map"></div-->
 {% include "metadata/metadata_details.html" %}
 <div id="metametadata" class="x-hide-display">
 </div>
 
+<h3>{% trans "Comments" %}</h3>
+<div class="comments_container">
+    {% comments layer as comments %}
+    {% for comment in comments %}
+        <div class="comment">
+            <p class="comment_author">{{ comment.author.get_full_name|default:comment.author|capfirst }}</p>
+            <div class="comment_content">
+                {{ comment.comment|escape|urlize|safe }} &mdash; 
+                <span class="comment_ago">
+                {% blocktrans with comment.submit_date|timesince as age %}
+                {{ age }} ago
+                {% endblocktrans %}
+                </span>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if request.user.is_authenticated %}
+        <h3>{% trans "Post a comment" %}</h3>
+        {% comment_form layer as comment_form %}
+        <form method="POST" action="{% comment_target layer %}">
+            {% csrf_token %}
+            <div class="comment_box">
+                {{ comment_form.comment }}
+            </div>
+            <div class="comment_post">
+                <input type="submit" value="{% trans "Submit" %}" />
+            </div>
+            <input type="hidden" name="next" value="{{ request.path }}" />
+        </form>
+    {% else %}
+        <p><a href="{% url auth_login %}">{% trans "Login to add a comment" %}</a></p>
+    {% endif %}
 </div>
-{% endwith %}{% endwith %}
+
+{% if request.user.is_authenticated %}
+	<h3>{% trans "Rate this layer" %}</h3>
+	{% user_rating request.user layer "layer" as user_layer_rating %}
+	<div id="user_rating" class="category-layer"></div>
+{% endif %}
+
+
+</div>
+{% endwith %}{% endwith %}{% endwith %}
+
 {% endblock %}
 
 {% block sidebar %}
@@ -323,13 +385,17 @@ Ext.onReady(function() {
     <div id="related_resources-manager"></div>
     <br/>
    <p><strong>INSPIRE Geoportal:</strong> <button id="inspire-validator">{% trans "Metadata Validation" %}</button></p>
-    
+
     <h3> {% trans "Download" %} </h3>
+    {% if request.user.is_authenticated %}    
     <p> <strong>{% trans "Data" %}: </strong>
-        {% for extension, type, link in layer.download_links %}
-            <a href="{{link}}">{{type}}</a>
+      {% for extension, type, link in layer.download_links %}
+      <a href="{{link}}">{{type}}</a>
         {% endfor %}
     </p>
+    {% else %}
+        <p><a href="{% url auth_login %}">{% trans "Login to download data" %}</a></p>
+    {% endif %}
     <p> <strong>{% trans "Metadata" %}: </strong>
         {% for mimetype, mdtype, link in layer.metadata_links %}
             <a href="{{link}}">{{mdtype}}</a>
@@ -337,6 +403,17 @@ Ext.onReady(function() {
             <em> {% trans "No metadata links provided for this data." noop %} </em>
         {% endfor %}
     </p>
+
+    <h3> {% trans "Legend" %} </h3>
+    {% comment %}
+    The request below accepts more parameters, like fontName ( fontName=DejaVu ) and scale ( SCALE=17471330.182978604 ).
+    A full list of options can be found at: http://docs.geoserver.org/latest/en/user/services/wms/get_legend_graphic/legendgraphic.html
+    {% endcomment %}
+    <p>
+        <img src="{{ GEOSERVER_BASE_URL }}wms?request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer={{ layer.typename }}&format=image%2Fpng&legend_options=fontAntiAliasing%3Atrue%3BfontSize%3A12%3B" />
+    </p>
+
+
     <h3>{% trans "Maps" %} </h3>
     {% if layer.maps %}
     <p>{% trans "The following maps use this data set" %}:
@@ -396,17 +473,12 @@ Ext.onReady(function() {
         <!--li><a href="/admin/metadata/layerext/{{layer.pk}}/">
 	    {% trans "Update the description of this data" %}
         </a></li-->
-        <li> <a href="{% url layer_replace layer.typename %}">
+        <li> <a href="{% url data_replace layer.typename %}">
             {% trans "Upload a new version of this data" %}
         </a></li>
         {% endif %}
-        {% if can_change_permissions %}
-        <li><a href="{% url edit_layer_permissions layer.typename %}">
-            {% trans "Edit Permissions" %}
-        </a></li>
-        {% endif %}
             {% if can_delete %}
-            <li><a href="{% url layer_remove layer.typename %}">
+            <li><a href="{% url data_remove layer.typename %}">
                 {% trans "Remove" %}
             </a></li>
 			{% endif %}
@@ -421,20 +493,29 @@ Ext.onReady(function() {
       <div id="permissions_form"></div>
     {% endif %}
     {% endif %}
-
-    {% comment %}
-
-    <p></p>	   
-    <h3> {% trans "Comments" %} </h3>
-    {% get_comment_count for layer.layerext as comment_count %}
-    <p>{{ comment_count }} comments have been posted.</p>
-    {% render_comment_list for layer.layerext %}
-
-    <h4> {% trans "Add a comment" %} </h4>
-    {% render_comment_form for layer.layerext %}
-
-    {% endcomment %}
-
-
 </div>
+{% endblock %}
+
+{% block end_body_js %}
+{% if request.user.is_authenticated %}
+	{% user_rating_js request.user layer "layer" %}
+{% else %}
+	<script src="{{ STATIC_URL }}agon_ratings/js/jquery.raty.js"></script>
+{% endif %}
+<script type="text/javascript">
+	$(function() {
+		$('div.overall_rating').raty({
+			half: true,
+			readOnly: true,
+			start: $('div.overall_rating').data('rating'),
+			path: "{{ STATIC_URL }}agon_ratings/img/"
+		});
+	});
+
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
 {% endblock %}

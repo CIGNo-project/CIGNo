@@ -8,9 +8,213 @@
 {% include "geonode/app_header.html" %}
 {% include "geonode/geo_header.html" %}
 {{ block.super }}
+<script src="{{ STATIC_URL }}cigno/externals/jqueryui/js/jquery-ui-1.8.21.custom.min.js" type="text/javascript"></script>
+<link href="{{ STATIC_URL }}cigno/externals/jqueryui/css/smoothness/jquery-ui-1.8.21.custom.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="{{ STATIC_URL }}cigno/externals/visualsearch/vendor/underscore-1.1.5.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}cigno/externals/visualsearch/vendor/backbone-0.5.0.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}cigno/externals/visualsearch/build-min/visualsearch.js" type="text/javascript"></script>
+<!--[if (!IE)|(gte IE 8)]><!-->
+  <link href="{{ STATIC_URL }}cigno/externals/visualsearch/build-min/visualsearch-datauri.css" media="screen" rel="stylesheet" type="text/css" />
+<!--<![endif]-->
+<!--[if lte IE 7]><!-->
+  <link href="{{ STATIC_URL }}cigno/externals/visualsearch/build-min/visualsearch.css" media="screen" rel="stylesheet" type="text/css" />
+<!--<![endif]-->
+<style>
+   .search-input{
+      display: none;
+   }
+</style>
 <script type="text/javascript">
+var visualSearch;
 Ext.onReady(function(){
    {% autoescape off %}
+
+   // extent to export cql
+   VS.model.SearchQuery.prototype.cql=function(){
+      return this.map(function(facet){ 
+         var category = facet.get('category');
+         var value = facet.get('value');
+         var cql_index = category;
+         var cql_relation = '=';
+         var cql_searchterm = value;
+         if(category=='text'){
+            cql_index = 'anyText';
+             }
+         // if(category=='keyword' || category=='subject'){
+         //    cql_relation = '=';
+         // }
+         if (category == 'notKeyword'){
+            cql_relation = '<>';
+            cql_index = 'keyword';
+         }
+         if (category == 'notTitle'){
+            cql_relation = '<>';
+            cql_index = 'title';
+         }
+         if (category == 'notAbstract'){
+            cql_relation = '<>';
+            cql_index = 'abstract';
+         }
+         console.log(category);
+             return  cql_index + " " + cql_relation +  " " + "'" + cql_searchterm.replace(/'/g,"''") + "'";  
+      }).join(' and ');
+      // return this.map(function(facet) {
+      //    var value = {};
+      //    value[facet.get('category')] = facet.get('value');
+      //    return value;
+      // });
+   };
+   
+   visualSearch = VS.init({
+      container  : $('#search_box_container'),
+      //query      : 'type': "gml",
+      unquotable : [
+         'text'
+      ],
+      callbacks  : {
+         search : function(query, searchCollection) {
+            var $query = $('#search_query');
+            var count  = searchCollection.size();
+            $query.stop().animate({opacity : 1}, {duration: 300, queue: false});
+            $query.html('<span class="raquo">&raquo;</span> You searched for: ' +
+                        '<b>' + (query || '<i>nothing</i>') + '</b>. ' +
+                        '(' + count + ' facet' + (count==1 ? '' : 's') + ')');
+            clearTimeout(window.queryHideDelay);
+            window.queryHideDelay = setTimeout(function() {
+               $query.animate({
+                  opacity : 0
+               }, {
+                     duration: 1000,
+                  queue: false
+                  });
+            }, 2000);
+ 
+            searchTable.doSearch();
+			// searchTable.searchStore.load({params: { //node: node.id,
+            //    cql : visualSearch.searchQuery.cql(),
+			//    start: 0,
+			//    limit: 25
+            // }});
+         },
+         facetMatches : function(callback) {
+            callback([
+               'keyword', 'title', 'abstract',
+               { label: 'notKeyword', category: 'Exclude' },
+               { label: 'notTitle', category: 'Exclude' },
+                 { label: 'notAbstract', category: 'Exclude' }
+            ]);
+         },
+         valueMatches : function(facet, searchTerm, callback) {
+            switch (facet) {
+            case 'anyText':
+               callback([
+                  { value: 'anyText', label: 'anyText' }
+               ]);
+               break; 
+            case 'keyword':
+               callback({{ keywords }});
+               break;
+            case 'notKeyword':
+                  callback({{ keywords }});
+               break;
+            case 'type':
+               callback([
+                  { value: 'ShapeFile', label: 'gml' },
+               ]);
+               break;
+            case 'title':
+               callback([
+                  { value: 'AnyText', label:'Any'}
+                  ]
+                       );
+               break;
+            case 'abstract':
+               callback([
+                  { value: 'AnyText', label:'Any'}
+               ]
+                       );
+               break;
+            }
+         }
+      }
+   });
+   
+   // extent to 
+   visualSearch.applyConstraint=function(query){
+      query.cql = this.searchQuery.cql();
+   };
+   visualSearch.initFromQuery=function(grid, query){
+      //TODO
+   };
+   
+   (function() {
+      var $ = jQuery; // Handle namespaced jQuery
+
+      TemporalExtentWidget = function(){
+        this.initialize();
+      };
+   
+      $.extend(TemporalExtentWidget.prototype, {
+        initialize: function() {
+          $( "#temporalextent-from" ).datepicker({
+            defaultDate: "+1w",
+            dateFormat: "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1,
+            onSelect: function( selectedDate ) {
+              $( "#temporalextent-to" ).datepicker( "option", "minDate", selectedDate );
+            }
+          });
+          $( "#temporalextent-to" ).datepicker({
+            defaultDate: "+1w",
+            dateFormat: "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1,
+            onSelect: function( selectedDate ) {
+              $( "#temporalextent-from" ).datepicker( "option", "maxDate", selectedDate );
+            }
+          });
+          $('.temporalextent-enabled').find(':checkbox').click(function(){ 
+            $('.temporalextent-expand').toggle();
+          });
+        },
+        initFromQuery: function(grid, query){
+          //TODO
+        },
+        hasConstraint: function() {
+          return $('.temporalextent-enabled :checkbox').is(':checked')
+        },
+        applyConstraint: function(query) {
+          if (this.hasConstraint()) {
+            var tempextent_begin = $( "#temporalextent-from" ).datepicker("getDate");
+            var tempextent_end = $( "#temporalextent-to" ).datepicker("getDate");
+            if(tempextent_begin != null){
+              query.tempextent_begin = tempextent_begin.format('Y-m-d');
+            } else {
+              delete query.tempextent_begin;
+            }
+            if(tempextent_end != null){
+              query.tempextent_end = tempextent_end.format('Y-m-d');
+            } else {
+              delete query.tempextent_end;
+            }
+          }
+          else {
+            // no constraint, don't include.
+            delete query.tempextent_begin;
+            delete query.tempextent_end;
+          }
+        }
+      });
+    })();
+
+    var temporalExtent = new TemporalExtentWidget();
+
+
+
+
 
     var bbox = new GeoNode.BoundingBoxWidget({
          proxy: "/proxy/?url=",
@@ -21,10 +225,10 @@ Ext.onReady(function(){
     var searchTable = new GeoNode.SearchTable({
         renderTo: 'search_results',
         trackSelection: true,
-        permalinkURL: '{% url search %}',
-        searchURL: '{% url search_api %}',
-        layerDetailURL: '{% url search_result_detail %}',
-        constraints: [bbox],
+        permalinkURL: '{% url data_search %}',
+        searchURL: '{% url data_search_api %}',
+        layerDetailURL: '{% url data_search_detail %}',
+        constraints: [temporalExtent,bbox,visualSearch],
         searchParams: {{init_search}}
     });
     searchTable.hookupSearchButtons('refine');
@@ -38,7 +242,7 @@ Ext.onReady(function(){
       cart: dataCart,
       renderTo: 'data_ops',
       
-      begin_download_url: '{% url geonode.maps.views.batch_layer_download %}',
+      begin_download_url: '{% url data_download %}',
       stop_download_url: '{{site}}geoserver/rest/process/batchDownload/kill/',
       download_url: '{{site}}geoserver/rest/process/batchDownload/download/'
     });
@@ -53,7 +257,7 @@ Ext.onReady(function(){
 	   renderTo: 'tabs-container',
 	   activeTab: 0,
 	   padding: 10, 
-	   items:[
+	   items:[{contentEl:'faceted_search', title:'Text/faceted search'},
                {title:'Browse by Thematic Classification',
 		xtype:'treepanel',
 		useArrows: true,
@@ -67,9 +271,9 @@ Ext.onReady(function(){
 		pathSeparator: '|',
 		root: {
 		       nodeType: 'async',
-		       text: 'CORILA Research areas / GEMET Themes',
+		       text: 'ISMAR Research areas / GEMET Themes',
 		       draggable: false,
-		       id: 'http://www.corila.it/cigno/researchareas/'
+		       id: 'http://www.ismar.cnr.it/cigno/researchareas/'
 		   },
 		listeners: {
 		       click: function(node,event){
@@ -110,8 +314,14 @@ Ext.onReady(function(){
 	       }
 		  ]
        });
+
     {% endautoescape %}
 });
+
+// visualsearch
+$(document).ready(function() {
+      });
+
 </script>
 {% endblock %}
 
@@ -120,6 +330,11 @@ Ext.onReady(function(){
   <div class="block">
     <h2>{% trans "Search" %} <span class="subtitle">{% trans "for geospatial data" %}</span></h2>
 
+    <div id="faceted_search">
+      <div style="sont-style: italic;">Try searching for: <b>Keyword</b>, <b>Title</b>, <b>Abstract</b>. To exclude try: <b>Not Keyword</b>, <b>Not Title</b>, <b>Not Abstract</b></div>
+      <div id="search_box_container"></div>
+      <div id="search_query">&nbsp;</div>
+    </div>
     <div id="tabs-container"></div>
     <div id="search_results"></div>  
     <p class="explain">{%trans "Click the <b>+</b> on any row to show layer metadata or download in PDF, KML, GeoTIFF, or SHP." %}
@@ -133,6 +348,13 @@ Ext.onReady(function(){
 <div class="threecol">
   <div id="refine" class="block">
     <h3>{% trans "Refine Search" %}</h3>
+    <div class="temporalextent-controls">
+      <div class="temporalextent-enabled"><input type="checkbox" /> {% trans "By temporal extent" %}</div>
+      <p><span class="explain">{% blocktrans %}Limit the search by date range.{% endblocktrans %}</span></p>
+      <div class="temporalextent-expand" style="display: none;">
+        <p>From: <input type="text" id="temporalextent-from" name="from"/> To: <input type="text" id="temporalextent-to" name="to"/></input>
+      </div>
+    </div>
     <div class="bbox-controls">
       <div class="bbox-enabled"><input type="checkbox" /> {% trans "By area" %}</div>
       <p><span class="explain">{% blocktrans %}Limit the search to data that includes features in the displayed area.{% endblocktrans %}</span></p>
@@ -150,15 +372,17 @@ Ext.onReady(function(){
     <div id="data_ops">
       <ul>
         <li><a href="#" class="create-map">{% trans "Create a new map" %}</a></li>
+        {% if request.user.is_authenticated %}
         <li><span class="export">{% trans "Export selected" %}:</span>
             <a href="#mixed" class="batch-download">Zip</a> 
         </li>
+        {% endif %}
     <!--    <li><span class="export">{% trans "Export selected" %}:</span>
             <a href="#shp" class="batch-download">Shapefile</a>, 
             <a href="#geotiff" class="batch-download">GeoTiff</a>
         </li> -->
       </ul>
-      <form id="create_map_form" action="{% url geonode.maps.views.newmap %}" method="POST">
+      <form id="create_map_form" action="{% url maps_new %}" method="POST">
       </form>
     </div>
   </div>
