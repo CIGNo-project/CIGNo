@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseNotModified
 import rdflib
 import surf
 from cigno.mdtools.utils_rdf import get_rdflib_store, serialize_store
-from surf.query import a, select
+from surf.query import a, select, construct, union, group, optional_group
 from django.conf import settings
 import os
 from surf.rdf import Literal, URIRef
@@ -15,6 +15,7 @@ from geonode.maps.models import Layer
 import logging
 from django.contrib.auth.decorators import login_required
 from django.utils.text import truncate_words
+import re
 
 logger = logging.getLogger("cigno.mdtools.views_rdf")
 
@@ -49,6 +50,11 @@ gemet_g = surf.ns.GEMET['Group']
 gemet_t = surf.ns.GEMET['Theme']
 member = surf.ns.SKOS['member']
 skos_c = surf.ns.SKOS['Concept']
+
+def sanitize_sparql(sparql):
+  _sparql = re.sub(r'{\s*{\s*{', '{ {', sparql)
+  __sparql = re.sub(r'}\s*}\s*}', '} }', _sparql)
+  return re.sub(r'}\s*}\s*UNION\s*{\s*{', '} UNION {', __sparql) 
 
 def save_graph():
   serialize_store(os.path.join(settings.PROJECT_ROOT,"stores","rdfstore"), os.path.join(settings.PROJECT_ROOT,"stores","rdfstore.rdf"))
@@ -111,17 +117,27 @@ class CignoRDF(object):
 
   def get_where_tree(self, res):
     if res.subject == rdflib.term.URIRef('http://www.corila.it/cigno/researchareas/'):
-      where = [("?s", a, surf.ns.CIGNO['Resource']),
+      where1 = [("?s", a, surf.ns.CIGNO['Resource']),
                ("?s", surf.ns.DCTERMS['subject'], "?key"),
                ("?cc", member, "?key"),
                ("?c", member, "?cc"),
                (res.subject, member, "?c")]
+      where2 = [("?s", a, surf.ns.CIGNO['Resource']),
+               ("?s", surf.ns.DCTERMS['subject'], "?key"),
+               ("?c", member, "?key"),
+               (res.subject, member, "?c")]
+      where = [union(group(*where1),group(*where2))]
     elif cigno_ra in res.rdf_type:
-      where = [("?s", a, surf.ns.CIGNO['Resource']),
+      where1 = [("?s", a, surf.ns.CIGNO['Resource']),
                ("?s", surf.ns.DCTERMS['subject'], "?key"),
                ("?c", member, "?key"),
                (res.subject, member, "?c")
                ]
+      where2 = [("?s", a, surf.ns.CIGNO['Resource']),
+               ("?s", surf.ns.DCTERMS['subject'], "?c"),
+               (res.subject, member, "?c")
+               ]
+      where = [union(group(*where1),group(*where2))]
     elif res.subject == rdflib.term.URIRef('http://www.eionet.europa.eu/gemet/supergroup/'):
       where = [("?s", a, surf.ns.CIGNO['Resource']),
                ("?s", surf.ns.DCTERMS['subject'], "?key"),
@@ -155,7 +171,7 @@ class CignoRDF(object):
   def get_not_empty_members(self, res):
     where = self.get_where_tree(res)
     query = select("?c").where(*where).distinct()
-    querys = "%s" % query
+    querys = sanitize_sparql("%s" % query)
     result = self.session.default_store.execute_sparql(querys)
     return result['results']['bindings']
     #return query
@@ -166,9 +182,16 @@ class CignoRDF(object):
              ]
 
     if surf.ns.CIGNO['ResearchArea'] in res.rdf_type:
-      where.append(("?s", surf.ns.DCTERMS['subject'], "?key"))
-      where.append(("?theme", member, "?key"))
-      where.append((res.subject, member, "?theme"))
+      where1 = [("?s", surf.ns.RDF['type'], surf.ns.CIGNO['Resource']),
+               ("?s", surf.ns.DCTERMS['subject'], "?key"),
+               ("?theme", member, "?key"),
+               (res.subject, member, "?theme")
+               ]
+      where2 = [("?s", surf.ns.RDF['type'], surf.ns.CIGNO['Resource']),
+               ("?s", surf.ns.DCTERMS['subject'], "?key"),
+               (res.subject, member, "?key")
+               ]
+      where = [union(group(*where1),group(*where2))]
     elif surf.ns.GEMET['Theme'] in res.rdf_type:
       where.append(("?s", surf.ns.DCTERMS['subject'], "?key"))
       where.append((res.subject, member, "?key"))
@@ -187,7 +210,7 @@ class CignoRDF(object):
     a =res.rdf_type
     # a.aa
 
-    result = self.session.default_store.execute_sparql("%s" % query)
+    result = self.session.default_store.execute_sparql(sanitize_sparql("%s" % query))
     return result['results']['bindings']
 
   # def get_where_relations(self, resUri):
@@ -502,7 +525,8 @@ def _classification_search(query, start, limit, **kw):
     rootResource = crdf.Collections(rootNode)
     where = crdf.get_where_tree(rootResource)
     query_obj = select("?s").where(*where).distinct()
-    resources = crdf.session.default_store.execute_sparql("%s" % query_obj)
+    querys = sanitize_sparql("%s" % query_obj)
+    resources = crdf.session.default_store.execute_sparql(querys)
     results = []
     for resource in resources['results']['bindings']:
       res = crdf.CignoResources(resource['s']['value'])
