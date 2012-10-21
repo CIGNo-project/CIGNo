@@ -119,7 +119,7 @@ class CignoRDF(object):
   def get_where_tree(self, res):
     # if res.subject == rdflib.term.URIRef('http://www.corila.it/cigno/researchareas/'):
     if cigno_ras in res.rdf_type:
-      where = [("?s", a, surf.ns.CIGNO['Resource']),
+      where1 = [("?s", a, surf.ns.CIGNO['Resource']),
                ("?s", surf.ns.DCTERMS['subject'], "?key"),
                ("?cc", member, "?key"),
                ("?c", member, "?cc"),
