@@ -1,5 +1,7 @@
 django-rosetta
 extractor
+rdflib==3.2.0  #  
+rdfextras=0.1  #
 #  easy_install surf # use easy_install instead
 #  easy_install -U surf.rdflib
 poster
@@ -15,4 +17,5 @@ django-extensions
 django-piston
 html5lib
 django-mediagenerator
+simplejson
 
