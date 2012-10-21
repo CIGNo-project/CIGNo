@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load cigno_utils %}
-
+{% load thumbnail %}
 
 <script type="text/javascript">
 {% autoescape off %}
@@ -31,12 +31,22 @@ Ext.onReady(function() {
 <p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|sanitize|default:_("-") }} </p>
 {% if is_layer %}
 <div id="preview_map"></div>
-{% endif %}
+{% else %}
 <p style="display:block; margin:0 auto; text-align:center;" > 
+  {% comment %}
   {% if md.thumbnail_exists %}
   <a href="{{md.download_links.0.2}}"><img src="{{ md.thumbnail_exists }}"/></a>
   {% endif %}
+  {% endcomment %}
+  <a href="{{md.download_links.0.2}}">
+  {% thumbnail md.base_file "300" as im %}
+    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+  {% empty %}
+    <img src="{{ STATIC_URL }}cigno/img/map-icon.png">
+  {% endthumbnail %}
+  </a>
 </p>
+{% endif %}
 <p> <strong>{% firstof fl.referencedate fl.resourcereferencedate %}</strong>
   {% for k in md.referencedate_set.all %} 
   {% if forloop.first %}<ul>{% endif %}
