@@ -54,7 +54,8 @@ INSTALLED_APPS = (
     'agon_ratings',
     'taggit',
     'south',
-
+    'sorl.thumbnail',
+    
     'geonode.core',
     'geonode.maps',
     'geonode.proxy',
@@ -71,10 +72,19 @@ INSTALLED_APPS = (
 #    'cigno.aisstat',
 )
 
+gettext_noop = lambda s: s
+LANGUAGES = [
+    ('it', gettext_noop('Italian')),
+    ('en', gettext_noop('English')),
+]
+
 MODELTRANSLATION_TRANSLATION_REGISTRY = "cigno.translation"
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'it'
+MODELTRANSLATION_DEBUG = DEBUG
+
 
 TEMPLATE_DIRS = (
+  os.path.join(PROJECT_ROOT,"local_templates"),
   os.path.join(PROJECT_ROOT,"templates"),
   os.path.join(GEONODE_ROOT,"templates"),
   os.path.join(GEONODE_ROOT,".."),
@@ -141,4 +151,9 @@ MEDIA_BUNDLES = (
      )
 
 )
+
+
+THUMBNAIL_ENGINE='sorl.thumbnail.engines.convert_engine.Engine'
+#THUMBNAIL_DEBUG=DEBUG
+THUMBNAIL_FORMAT='PNG'
 
