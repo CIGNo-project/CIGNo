@@ -5,7 +5,8 @@ rdfextras=0.1  #
 #  easy_install surf # use easy_install instead
 #  easy_install -U surf.rdflib
 poster
--e svn+http://django-modeltranslation.googlecode.com/svn/trunk/@123#egg=django-modeltranslation # problem with revision 125 (fieldset)
+# -e svn+http://django-modeltranslation.googlecode.com/svn/trunk/@123#egg=django-modeltranslation # problem with revision 125 (fieldset)
+-e git://github.com/deschler/django-modeltranslation.git#egg=django-modeltranslation
 -e hg+https://bitbucket.org/unkier/django-elfinder#egg=django-elfinder # need to add setup.py manually
 #wget "http://downloads.sourceforge.net/project/elfinder/elfinder-1.1.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Felfinder%2Ffiles%2F&ts=1326561724&use_mirror=kent" -O /var/www/cigno-project/CIGNo/cigno/static/elfinder-1.1.tar.gz
 #cd /var/www/cigno-project/CIGNo/cigno/static/cigno/externals
@@ -18,4 +19,6 @@ django-piston
 html5lib
 django-mediagenerator
 simplejson
+sorl-thumbnail #install requirements imagemagick
+
 
