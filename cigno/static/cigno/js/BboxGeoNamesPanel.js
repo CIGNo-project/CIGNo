@@ -24,6 +24,7 @@ GeoExt.BboxGeoNamesMapPanel = Ext.extend(GeoExt.MapPanel, {
 	    {
 		'featureremoved': function(evt){
 		    Ext.getCmp('bboxgrid').store.removeAll();
+		    Ext.getCmp('geographic_bounding_box_id').setValue(null);
 		},
 		'featureadded': function(evt){
 		    if(this.boxLayer.features.length > 1){
