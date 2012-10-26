@@ -1,0 +1,165 @@
+{% extends "fullscreen.html" %}
+{% load i18n %}
+{% load media %}
+
+{% block title %} {% trans "Map Viewer" %} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{% include "geonode/ext_header.html" %}
+{% include "geonode/app_header.html" %}
+{% include "geonode/geo_header.html" %}
+<script src="http://www.google.com/jsapi?key={{GOOGLE_API_KEY}}"></script>
+<script type="text/javascript">
+    google.load("earth", "1");
+</script>
+
+{% include_media 'cigno.js' %}
+
+<link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}theme/ux/colorpicker/color-picker.ux.css" />
+<style type="text/css">
+    #templates { display: none; }
+
+    .more-overlay-element {
+        float: left;
+        z-index: 4000;
+        position: absolute;
+        right: 50px;
+        top: 10px;
+        height:25px;
+        width:50px;
+        background: #FFF;
+        text-decoration: none;
+        border: 1px solid #000;
+    }
+
+    .more-overlay-element .x-btn-small td {background-image: none; text-decoration:none;}
+    .more-overlay-element .x-btn-small td button {text-decoration:none;}
+
+     .chart {
+         height: 100%;
+     }
+</style>
+
+<script src="{{ GEONODE_CLIENT_LOCATION }}script/PrintPreview.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}externals/PrintPreview/resources/css/printpreview.css" />
+<script src="{{GEOSERVER_BASE_URL}}pdf/info.json?var=printCapabilities" type="text/javascript"></script>
+<script src="http://people.iola.dk/olau/flot/jquery.js" type="text/javascript"></script>
+<script src="http://people.iola.dk/olau/flot/jquery.flot.js" type="text/javascript"></script>
+<script src="http://people.iola.dk/olau/flot/jquery.flot.resize.js" type="text/javascript"></script>
+<script src="http://people.iola.dk/olau/flot/jquery.flot.crosshair.js" type="text/javascript"></script>
+<script src="http://people.iola.dk/olau/flot/jquery.flot.navigate.js" type="text/javascript"></script>
+{{ block.super }}
+
+<script type="text/javascript">
+var app;
+var sos;
+Ext.onReady(function() {
+{% autoescape off %}
+    var config = Ext.apply({
+        tools: [{
+            ptype: "gxp_wmsgetfeatureinfo",
+            // comment the line below if you do not want feature info in a grid
+            format: "grid",
+            actionTarget: "main.tbar",
+            outputConfig: {width: 400, height: 300}
+        },{
+            ptype: "gxp_measure",
+            actionTarget: "main.tbar"
+       }
+                // enable filtrable layer
+                // , { ptype: "gxp_featuremanager", id: "featuremanager", maxFeatures: 20 }
+                // ,{ ptype: "gxp_wmsfilterview", actionTarget: "main", featureManager: "featuremanager", }
+               ],
+        proxy: "/proxy/?url=",
+
+        /* The URL to a REST map configuration service.  This service 
+         * provides listing and, with an authenticated user, saving of 
+         * maps on the server for sharing and editing.
+         */
+        rest: "/maps/",
+        homeUrl: "{% url home %}",
+        localGeoServerBaseUrl: "{{ GEOSERVER_BASE_URL }}",
+        localCSWBaseUrl: "{{ GEONETWORK_BASE_URL }}srv/en/csw",
+        csrfToken: "{{ csrf_token }}",
+        authorizedRoles: "{{ user.is_authenticated|yesno:"ROLE_ADMINISTRATOR,ROLE_ANONYMOUS" }}"
+    }, {{ config }});
+
+    app = new GeoExplorer(config);
+
+
+
+    var sosMenuItem = {
+        text: 'Add ISMAR SOS',
+        scope:this,
+        checkHandler: function(menuItem, checked) {
+            if (checked) {
+               sos = new OpenLayers.SOSClient({map: app.mapPanel.map, url: 'http://david.ve.ismar.cnr.it/52nSOSv3_WAR/sos?'});
+               //sos = new OpenLayers.SOSClient({map: app.mapPanel.map, url: 'http://sos.irea.cnr.it/sos?'});
+
+            } else {
+               sos.destroyLayer();
+            }
+        }
+    };
+
+    var moreButton = new Ext.Button({
+            text: 'More...',
+            cls: "more-overlay-element",
+            id: 'moreBtn',
+            menu: {
+                defaults: {
+                    checked: false
+                },
+
+                items: [
+                    sosMenuItem
+                ]
+            }
+    });
+
+
+    app.mapPanel.add(moreButton);
+
+
+    var permalinkTemplate = new Ext.Template("{protocol}//{host}/maps/{id}");
+    var permalink = function(id) {
+            return permalinkTemplate.apply({
+                protocol: window.location.protocol,
+                host: window.location.host,
+                id: id
+            }) 
+        };
+
+	var moreInfoTemplate = new Ext.Template(decodeURIComponent(Ext.get("more-info-tpl").dom.innerHTML));
+    var mapInfoHtml = config.id ? moreInfoTemplate.apply({permalink : permalink(app.mapID)}) : "This map is currently unsaved";
+    Ext.DomHelper.overwrite(Ext.get("more-info"), mapInfoHtml)
+
+    var titleTemplate = new Ext.Template(Ext.get("title-tpl").dom.innerHTML);
+    Ext.DomHelper.overwrite(Ext.get("map-title-header"), titleTemplate.apply({title: config.about.title}));
+
+    app.on("saved", function(id) {
+        //reset title header
+        Ext.DomHelper.overwrite(Ext.get("map-title-header"), titleTemplate.apply({title: config.about.title}))
+
+        //reset more info link
+        Ext.DomHelper.overwrite(Ext.get("more-info"), moreInfoTemplate.apply({permalink : permalink(app.mapID)}))
+    }, this);
+{% endautoescape %}
+});
+</script>
+
+{% endblock %}
+
+{% block body %}
+<div id="header-wrapper">
+  {{ block.super }}
+  <div id="topPanel">
+    <div id="more-info"></div>
+    <span id="map-title-header"></span>
+  </div>
+</div>
+<div id="templates">
+  <div id="more-info-tpl"><a class='link' href='{permalink}'>{% trans "View info" %}</a></div>
+  <div id="title-tpl"><a class='maplist' href='/maps/search'>{% trans "Maps" %}</a> / <strong>{title}</strong></div>
+</div>
+{% endblock %}
