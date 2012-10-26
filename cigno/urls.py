@@ -1,7 +1,11 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
-
 from geonode.urls import *
+
+js_info_dict = {
+    'domain': 'djangojs',
+    'packages': ('geonode','cigno',)
+}
 
 # admin-tools
 urlpatterns = patterns('',
@@ -20,6 +24,7 @@ urlpatterns += patterns('cigno.metadata.views',
                         (r'^resource/(?P<resourceid>[^/]*)/ajax-permissions$', 'ajax_resource_permissions'),
                         (r'^api/(?P<model>[^/]*)/$', 'api'),
                         (r'^api/(?P<model>[^/]*)/(?P<id>[^/]*)/$', 'api'),
+                        url(r'^add_responsibleparty', 'add_responsibleparty', name='add_responsibleparty'),
                         )
 
 urlpatterns += patterns('',
@@ -28,6 +33,7 @@ urlpatterns += patterns('',
                         (r'^elfinder/', include('elfinder.urls')),
                         url(r'^rosetta/', include('rosetta.urls')),
                         (r'^gemetclient/', 'cigno.metadata.views.gemetclient'),
+                        (r'^license/ismar/$', 'django.views.generic.simple.direct_to_template', {'template': 'license/ismar.html'}),
                         )
 
 # Extra static file endpoint for development use
