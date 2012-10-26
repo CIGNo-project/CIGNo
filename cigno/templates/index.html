@@ -28,7 +28,7 @@
       padding: 5px;
       width: 570px !important;
       z-index: 200;
-      height: 80px;
+      height: 50px;
       }
       .lionSlideShow .content h2 { font-size: 18px; color: #DDD; } 
       .lionSlideShow .commons {
@@ -58,12 +58,13 @@
       width: 580px;
       border: 2px solid #666;
       /*background-image: url('http://cigno.ve.ismar.cnr.it/geoserver-geonode-dev/geonode/wms?LAYERS=geonode%3ABase50000SpeditivaTxt&STYLES=&FORMAT=image%2Fjpeg&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&CRS=EPSG%3A900913&BBOX=1319174,5637710,1441167,5717205&WIDTH=580&HEIGHT=378');*/
-      background-image: url('{{ STATIC_URL }}cigno/img/idt_veneto_speditiva.jpeg');
+      /* background-image: url('{{ STATIC_URL }}cigno/img/idt_veneto_speditiva.jpeg'); */
+      background-image: url('{{ STATIC_URL }}cigno/img/atlante_base.png'); 
       }
 
-      div#slideShow {
+      /*div#slideShow {
       background-image: url('http://www.silvenezia.it/geoserver/wms??SERVICE=WMS&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=sil2:bati_scanner_feat_unionsfondo&EXCEPTIONS=XML&VERSION=1.3.0&REQUEST=GetMap&TILED=true&SRS=EPSG%3A900913&BBOX=1319174,5637710,1441167,5717205&WIDTH=580&HEIGHT=378');
-      }
+      }*/
 </style>
 
 <script type="text/javascript">
@@ -98,25 +99,25 @@ Ext.onReady(function(){
          margins: '10 0 10 0'
       },
       items:[{
-         text: 'Search & Browse',
+         text: '{% trans "Search & Browse" %}',
          iconCls: 'resource-search-button',
          handler: function() {
             window.location = '{% url geonode.maps.views.search_page %}';
          }
       },{
-         text: 'Upload Geospatial Resource',
+         text: '{% trans "Upload Geospatial Resource" %}',
          iconCls: 'layer-upload-button',
          handler: function() {
             window.location = '{% url geonode.maps.views.upload_layer %}';
          }
       },{
-         text: 'Upload Digital Resource',
+         text: '{% trans "Upload Digital Resource" %}',
          iconCls: 'layer-upload-button',
          handler: function() {
             window.location = '{% url cigno.metadata.views.resource_metadata %}';
          }
       },{
-         text: 'Maps',
+         text: '{% trans "Maps" %}',
          iconCls: 'maps-button',
          handler: function() {
             window.location = '{% url geonode.maps.views.maps %}';
@@ -134,20 +135,8 @@ Ext.onReady(function(){
 <div class="twocol">
 <!-- TODO: i18n on the text here -->
   <div class="block">
-    <h2> {% trans "Welcome to CIGNo portal  (Collaborative Interoperable Geographic Node)" %}</h2>
-    {% blocktrans %} <p>The CIGNO system is proposed to implement a
-    system for heterogeneous multimedia data and metadata management
-    (scientific and geographical, textual documents, tables, etc...)
-    whose use can help users (stakeholders, administrators,
-    scientists) to increase the knowledge.</p>
-
-    <p>The CIGNO system allows to create a catalog of metadata and data,
-    both geographic and non, through the upload by the user, it allows
-    the creation of servizidi sharing standards (OGC wms, wcs, wfs)
-    and the eventual downolad of the resource.  CIGNO also allows the
-    composition and visualization of maps created using geographic
-    data available on CIGNO or on external servers.</p>
-    {% endblocktrans %} 
+    <h2> {% trans "Welcome to CIGNo portal" %}</h2>
+    {% blocktrans %} CIGNo Home Page Description {% endblocktrans %} 
 
     {% comment %}
     <p>
@@ -174,9 +163,7 @@ Ext.onReady(function(){
       </ul>
     </div>
   </div>
-  <span><b>Web Map Service Slideshow</b> based on 
-   <a href="http://www.silvenezia.it" target="_blank">www.silvenezia.it</a> 
-   and <a href="http://cigno.corila.it" target="_blank">cigno.corila.it</a>.
+  <span><b>Web Map Service Slideshow</b>
   </span>
   <!--div class="block">
     <h2> {% trans "Maps" %} </h2>
