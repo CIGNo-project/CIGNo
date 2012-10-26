@@ -202,7 +202,145 @@ Ext.apply(Ext.form.VTypes, {
    passwordText : 'Passwords do not match'
 });
 
+Ext.ResponsiblePartyForm = Ext.extend(Ext.FormPanel, {
+  initComponent:function() {
+	  var rpThisComponent = this; //reference to use in handler
 
+      var config = {
+	     //labelAlign: 'top',
+         //fileUpload: true,
+         frame: true,
+         autoHeight: true,
+         //unstyled: true,
+         //labelWidth: 125,
+         defaults: {            
+            msgTarget: 'side',
+	        labelStyle: 'font-weight:bold;'
+         },
+         items: [{
+			xtype: 'textfield',
+			id: 'rp_organization_name_it',
+			fieldLabel: gettext('Organization name') + '*',
+			name: 'organization_name_it',
+			allowBlank: false
+         },{
+			xtype: 'textfield',
+			id: 'rp_organization_web',
+			fieldLabel: gettext('Organization web'),
+			name: 'organization_web',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_organization_tel',
+			fieldLabel: gettext('Organization tel'),
+			name: 'organization_tel',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_organization_email',
+			fieldLabel: gettext('Organization email'),
+			name: 'organization_email',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_organization_address',
+			fieldLabel: gettext('Organization address'),
+			name: 'organization_address',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_office_it',
+			fieldLabel: gettext('office'),
+			name: 'office_it',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_name',
+			fieldLabel: gettext('name') + '*',
+			name: 'name',
+			allowBlank: false
+         },{
+			xtype: 'textfield',
+			id: 'rp_surname',
+			fieldLabel: gettext('surname') + '*',
+			name: 'surname',
+			allowBlank: false
+         },{
+			xtype: 'textfield',
+			id: 'rp_tel',
+			fieldLabel: gettext('tel'),
+			name: 'tel',
+			allowBlank: true
+         },{
+			xtype: 'textfield',
+			id: 'rp_email',
+			fieldLabel: gettext('email'),
+			name: 'email',
+			allowBlank: true
+         },{			      
+            fieldLabel: 'Warning',
+            xtype: 'box',
+            autoEl: {
+               tag: 'p',
+               html: gettext('the responsible party will be permanently added. Please verify the responsible party details before continuing')
+            }
+         },{			      
+            fieldLabel: '',
+            xtype: 'box',
+            autoEl: {
+               tag: 'p',
+               html: '*' + gettext('this field is required.')
+            }
+         }],
+         buttons: [{
+            text: gettext('Add'),
+            handler: function(){
+               if (rpThisComponent.getForm().isValid()) {
+                  rpThisComponent.getForm().submit({
+                     //url: rpThisComponent.rp_form_target,
+                     url: '/add_responsibleparty',
+                     waitMsg: gettext('Add Responsible party...'),
+                     success: function(fp, o) {
+                        //document.location = o.result.redirect_to;
+                        Ext.Msg.show({
+                           title: gettext("Added"),
+                           msg: 'The responsible party was added successfully',
+                           minWidth: 200,
+                           modal: true,
+                           icon: Ext.Msg.INFO,
+                           buttons: Ext.Msg.OK
+                        });
+                        rpThisComponent.getForm().reset();
+                     },
+                     failure: function(fp, o) {
+                        error_message = '<ul>';
+                        for (var i = 0; i < o.result.errors.length; i++) {
+                           error_message += '<li>' + o.result.errors[i] + '</li>';
+                        }
+                        error_message += '</ul>';
+
+                        Ext.Msg.show({
+                           title: gettext("Error"),
+                           msg: error_message,
+                           minWidth: 200,
+                           modal: true,
+                           icon: Ext.Msg.ERROR,
+                           buttons: Ext.Msg.OK
+                        });
+                     }
+                  });
+               }
+            }
+         }]
+      };
+      // apply config
+      Ext.apply(this, Ext.apply(this.initialConfig, config));
+      Ext.ResponsiblePartyForm.superclass.initComponent.apply(this, arguments);
+  }
+ 
+});
+
+Ext.reg('responsiblepartyform', Ext.ResponsiblePartyForm);
 
 //////////////////////////////////
 Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
@@ -234,7 +372,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 
       var resourceTypeConfig = {
 		 xtype:'fieldset',
-		 title: 'Select a resource type',
+		 title: gettext('Select a resource type'),
 		 //collapsible: true,
 		 autoHeight:true,
 		 //defaults: {width: 530},
@@ -299,7 +437,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				      }
 				     },
 		 items:[{
-			title:'Identifications',
+			title: gettext('Identifications'),
 			layout:'form',
 			items:[{
 			   xtype: 'tabpanel',
@@ -314,7 +452,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 					        }
 					       },			    
 			   items: [{
-				  title:'IT',
+				  title: 'IT',
 				  layout:'form',
 				  items:[{
 				     xtype: 'textfield',
@@ -348,7 +486,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			},{
 			   xtype: 'compositefield',
 			   prefix: 'referencedate_set',
-			   fieldLabel: 'Reference date',
+			   fieldLabel: gettext('Reference date'),
 			   msgTarget : 'side',
 			   anchor    : '-20',
 			   defaults: {
@@ -371,7 +509,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   html:'<hr/>'
 			},{
 			   xtype: 'radiogroup',
-			   fieldLabel: 'Use limitation',
+			   fieldLabel: gettext('Use limitation'),
 			   name: 'use_limitation',
 			   columns: 2,
                items: [
@@ -388,7 +526,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   html:'<hr/>'
 			},{
 			   xtype:'fieldset',
-			   title: 'Temporal extent / Sample frequency',
+			   title: gettext('Temporal extent / Sample frequency'),
 			   //collapsible: true,
 			   autoHeight:true,
 			   //defaults: {width: 530},
@@ -442,7 +580,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   }]
 			},{
 			   xtype:'fieldset',
-			   title: 'Responsible party - resource',
+			   title: gettext('Responsible party - resource'),
 			   //collapsible: true,
 			   autoHeight:true,
 			   //defaults: {width: 530},
@@ -477,9 +615,34 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				     emptyText:'Role...'
 				  }]
 			   }]
-			}]
+			},{
+                  fieldLabel: 'If responsible party is not on the list',
+                  id: 'responsibleparty-add',
+                  xtype: 'box',
+                  autoEl: {
+                     tag: 'a',
+                     href: '#',
+                     html: 'Add new responsible party'
+                  },
+                  listeners: {
+                     render: function(c){
+                        c.getEl().on('click', function(){
+                           new Ext.Window({
+                              title: 'Responsible party',
+                              layout: "fit",
+                              width: 380,
+                              autoHeight: true,
+                              items: [{
+                                 xtype: "responsiblepartyform",
+                                 rp_form_target: this.rp_form_target
+                              }]
+                           }).show();
+                        }, c, {stopEvent: true});
+                     }
+                  }
+               }]
 		 },{ // start tab
-			title:'Classification',
+			title: gettext('Classification'),
 			layout:'form',
 			items: [
                // 			    {
@@ -492,11 +655,11 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				  xtype: 'autoitemselector',
 				  url: '/api/topiccategory/',
 				  name: 'topic_category_ext_str',
-				  fieldLabel: 'Topic category'
+				  fieldLabel: gettext('Topic category')
                   //				}]
 			   },{
 			      xtype: 'label',
-			      fieldLabel:'Keywords'
+			      fieldLabel: gettext('Keywords')
 			   },{
 			      xtype: 'keywordsgrid',
 			      id: 'keywords_grid_id',
@@ -524,13 +687,13 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   }
 			]
 		 },{
-			title:'Spatial information',
+			title: gettext('Spatial information'),
 			items: [{
 			   id: 'id-bboxgeonamespanel',
 			   xtype: 'bboxgeonamespanel'
 			},{
 			   xtype:'fieldset',
-			   title: 'Quality',
+			   title: gettext('Quality'),
 			   collapsible: true,
 			   //checkboxToggle:true,
 			   collapsed: true,
@@ -556,7 +719,7 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				     layout:'form',
 				     items:[{
 				        xtype: 'textarea',
-				        fieldLabel: 'Lineage (IT)',
+				        fieldLabel: gettext('Lineage') + ' (IT)',
 				        name: 'lineage_it'
 				     }]
 			      },{
@@ -564,27 +727,27 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				     layout:'form',
 				     items:[{
 				        xtype: 'textarea',
-				        fieldLabel: 'Lineage (EN)',
+				        fieldLabel: gettext('Lineage') + ' (EN)',
 				        name: 'lineage_en'
 				     }]
                   }]
                },{
 				  xtype: 'numberfield',
 				  allowDecimals: false,
-				  fieldLabel: 'Spatail resolution - equivalent scale',
+				  fieldLabel: gettext('Spatail resolution - equivalent scale'),
 				  name: 'equivalent_scale'
 			   },{
 				  xtype: 'numberfield',
 				  allowDecimals: false,
-				  fieldLabel: 'Distance',
+				  fieldLabel: gettext('Distance'),
 				  name: 'distance'
 			   },{
-				  fieldLabel: 'Distance - unit of measure',
+				  fieldLabel: gettext('Distance - unit of measure'),
 				  name: 'uom_distance'
 			   }]
 			},{
 			   xtype:'fieldset',
-			   title: 'Vertical information',
+			   title: gettext('Vertical information'),
 			   collapsible: true,
 			   //checkboxToggle:true,
 			   collapsed: true,
@@ -597,22 +760,22 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 				  hiddenName: "vertical_datum",
 				  url: '/api/verticaldatum/',
 				  emptyText:'select datum...',
-				  fieldLabel: 'Vertical datum'
+				  fieldLabel: gettext('Vertical datum')
 			   },{
 				  xtype: 'numberfield',
-				  fieldLabel: 'Vertical extent - minimum value',
+				  fieldLabel: gettext('Vertical extent - minimum value'),
 				  name: 'vertical_extent_min'
 			   },{
 				  xtype: 'numberfield',
-				  fieldLabel: 'Vertical extent - maximum value',
+				  fieldLabel: gettext('Vertical extent - maximum value'),
 				  name: 'vertical_extent_max'
 			   },{
-				  fieldLabel: 'Vertical extent - unit of measure',
+				  fieldLabel: gettext('Vertical extent - unit of measure'),
 				  name: 'uom_vertical_extent'
 			   }]
 			}]
 		 },{
-			title:'Additional information',
+			title: gettext('Additional information'),
 			layout:'form',
 			items: [{
 			   xtype: 'tabpanel',
@@ -666,44 +829,44 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   xtype: 'autoitemselector',
 			   url: '/api/presentationform/',
 			   name: 'presentation_form_str',
-			   fieldLabel: 'Presentation form'
+			   fieldLabel: gettext('Presentation form')
 			},{
 			   xtype: 'autoitemselector',
 			   url: '/api/distributionformat/',
 			   name: 'distribution_format_str',
-			   fieldLabel: 'Distribution format'
+			   fieldLabel: gettext('Distribution format')
 			},{
 			   xtype: "autocombo",
 			   hiddenName: "resource_type",
 			   url: '/api/resourcetype/',
 			   emptyText:'Resource type',
-			   fieldLabel: 'Hierarchy level'
+			   fieldLabel: gettext('Hierarchy level')
 			},{
 			   xtype: "autocombo",
 			   hiddenName: "language",
 			   url: '/api/language/',
 			   emptyText:'select...',
-			   fieldLabel: 'Language'
+			   fieldLabel: gettext('Language')
 			},{
 			   xtype: "autocombo",
 			   hiddenName: "character_set",
 			   url: '/api/characterset/',
 			   emptyText:'select...',
-			   fieldLabel: 'Character set'
+			   fieldLabel: gettext('Character set')
 			},{
 			   xtype: "autocombo",
 			   hiddenName: "update_frequency",
 			   url: '/api/updatefrequency/',
 			   emptyText:'select...',
-			   fieldLabel: 'Maintenance frequency'
+			   fieldLabel: gettext('Maintenance frequency')
 			},{
 			   xtype: 'autoitemselector',
 			   url: '/api/spatialrepresentationtype/',
 			   name: 'spatial_representation_type_ext_str',
-			   fieldLabel: 'Spatial representation type'
+			   fieldLabel: gettext('Spatial representation type')
 			},{
 			   xtype:'fieldset',
-			   title: 'Responsible party - metadata',
+			   title: gettext('Responsible party - metadata'),
 			   //collapsible: true,
 			   autoHeight:true,
 			   //defaults: {width: 530},
@@ -741,7 +904,32 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 					      // vtype: 'responsibleparty'
 					      // }
 					     ]
-			   }]
+			   },{
+                  fieldLabel: 'If responsible party is not on the list',
+                  id: 'mdresponsibleparty-add',
+                  xtype: 'box',
+                  autoEl: {
+                     tag: 'a',
+                     href: '#',
+                     html: 'Add new responsible party'
+                  },
+                  listeners: {
+                     render: function(c){
+                        c.getEl().on('click', function(){
+                           new Ext.Window({
+                              title: 'Responsible party',
+                              layout: "fit",
+                              width: 380,
+                              autoHeight: true,
+                              items: [{
+                                 xtype: "responsiblepartyform",
+                                 rp_form_target: this.rp_form_target
+                              }]
+                           }).show();
+                        }, c, {stopEvent: true});
+                     }
+                  }
+               }]
 			}
 			       ]
 		 }]
