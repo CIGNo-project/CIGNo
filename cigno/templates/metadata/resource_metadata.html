@@ -1,5 +1,6 @@
 {% extends "page_layout.html" %}
 {% load i18n %}
+{% load media %}
 
 {% block title %} {% trans "Upload digital resource"  %} - {{ block.super }} {% endblock %}
 
@@ -8,39 +9,9 @@
 {% include "geonode/app_header.html" %}
 {% include "geonode/geo_header.html" %}
 
-<script type="text/javascript" src="/static/cigno/js/CIGNo.js"></script>
-<script type="text/javascript" src="/static/cigno/js/ResourceForm.js"></script>
+{% include_media 'cigno.js' %}
 
-<!--script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.Field.js"></script>
-<script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.FieldSet.js"></script>
-<script type="text/javascript" src="/static/cigno/externals/dynform/Ext.form.FormPanel.js"></script>
-<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/Spinner.js"></script> 
-<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/SpinnerField.js"></script> 
-<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/MultiSelect.js"></script> 
-<script type="text/javascript" src="/static/cigno/externals/ext/examples/ux/ItemSelector.js"></script> 
-<script type="text/javascript" src="/static/cigno/externals/gemetclient/build/GemetClient.js"></script>  
-<script type="text/javascript" src="/static/cigno/js/GemetPanel.js"></script-->
-<!--script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/PanZoom.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/ArgParser.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Util.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/MousePosition.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/DrawFeature.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/RegularPolygon.js"></script>  
-
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Control/SelectFeature.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Handler/Feature.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Anchored.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/Framed.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Popup/FramedCloud.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Format/JSON.js"></script>  
-<script type="text/javascript" src="/static/cigno/externals/OpenLayers/Format/GeoJSON.js"></script-->  
-<!-- GeoNames -->
-<!--script type="text/javascript" src="/static/cigno/externals/GeoExt.ux/GeoNamesSearchCombo.js"></script>  
-<script type="text/javascript" src="/static/cigno/js/GeoNamesSearchCombo.js"></script-->  
-
-<link rel="stylesheet" type="text/css" href="/static/cigno/externals/ext/examples/ux/css/Spinner.css"/>
-<link rel="stylesheet" type="text/css" href="/static/cigno/externals/ext/examples/ux/css/MultiSelect.css"/>
+{% include_media 'cigno.css' %}
 
 
 <style>
@@ -86,6 +57,7 @@ Ext.onReady(function(){
     Ext.QuickTips.init();
     
     var form_target = "{{ request.get_full_path }}";
+    var rp_form_target = "{% url add_responsibleparty %}";
     var xml_unsafe = /(^[^a-zA-Z\._]+)|([^a-zA-Z0-9\._])/g;
             
     var permissionsField = new Ext.form.Hidden({
@@ -106,6 +78,7 @@ Ext.onReady(function(){
       width: 600,
       permissionsField: permissionsField,
       form_target: form_target,
+      rp_form_target: rp_form_target,
 	  listeners: {                 
 	     afterrender: function() {
             this.loadData(initial);

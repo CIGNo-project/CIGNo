@@ -1,12 +1,14 @@
 {% extends "page_layout.html" %}
 {% load i18n %}
+{% load media %}
 
 {% block title %} {{ layer.title }} - {{ block.super }} {% endblock %}
 
 {% block head %}
 {% include "geonode/ext_header.html" %}
-<script type="text/javascript" src="/static/cigno/externals/gemetclient/build/GemetClient.js"></script>  
-<script type="text/javascript" src="/static/cigno/js/GemetPanel.js"></script>  
+
+{% include_media 'cigno.js' %}
+
 {{ block.super }}
 <script type="text/javascript">
 Ext.onReady(function() {

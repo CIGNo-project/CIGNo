@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load cigno_utils %}
+
 
 <script type="text/javascript">
 {% autoescape off %}
@@ -26,7 +28,10 @@ Ext.onReady(function() {
 <div id="identification" class="x-hide-display">
 <!--h4>{% trans "Identification" %}</h4-->
 <!--p> <strong>{{ fl.titleml }}:</strong> {{ md.titleml }} </p-->
-<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|default:_("-") }} </p>
+<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|sanitize|default:_("-") }} </p>
+{% if is_layer %}
+<div id="preview_map"></div>
+{% endif %}
 <p style="display:block; margin:0 auto; text-align:center;" > 
   {% if md.thumbnail_exists %}
   <a href="{{md.download_links.0.2}}"><img src="{{ md.thumbnail_exists }}"/></a>
@@ -51,7 +56,7 @@ Ext.onReady(function() {
 </p>
 <hr/>
 {% if md.access_constraints %}<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>{% endif %}
-<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("<a href='http://creativecommons.org/licenses/by-nc/3.0/it/deed.it'>Creative Commons Attribuzione - Non commerciale 3.0</a>") }}</p>
+<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("<a href='/license/ismar/'>ISMAR Data Lincese</a>") }}</p>
 {% if md.other_constraints %}<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>{% endif %}
 {% if md.security_constraints %}<p> <strong>{{ fl.security_constraints }}:</strong> {{ md.security_constraints|default:_("-") }}</p>{% endif %}
 <hr/>
