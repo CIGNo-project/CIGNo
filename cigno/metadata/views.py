@@ -462,7 +462,7 @@ def resource_remove(request, resourceid):
             }))
         if (request.method == 'POST'):
             resource.delete()
-            return HttpResponseRedirect(reverse("data"))
+            return HttpResponseRedirect(reverse("data_search"))
         else:
             return HttpResponse("Not allowed",status=403) 
     else:  
@@ -626,3 +626,24 @@ def _api_list(request, model):
                         )
     
 
+@csrf_exempt
+@login_required
+def add_responsibleparty(request):
+    if request.user.is_authenticated():
+        if not request.user.has_perm('metadata.add_responsibleparty'):
+            return HttpResponse(loader.render_to_string('401.html', 
+                RequestContext(request, {'error_message': 
+                    _("You are not permitted to add Responsible Party")})), status=401)
+
+        if request.method == "POST":
+            form = ResponsiblePartyForm(request.POST)
+        if form.is_valid():
+            saved_resource = form.save()
+            return HttpResponse(json.dumps({
+                        "success": True
+                        }))
+        else:
+            errors = []
+            for f, e in form.errors.items():
+                errors.extend([escape("%s: %s" % (f, v)) for v in e])
+            return HttpResponse(json.dumps({ "success": False, "errors": errors}))
