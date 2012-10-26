@@ -132,7 +132,8 @@ MEDIA_BUNDLES = (
      'cigno/js/RelationsManager.js',
      'cigno/js/ResourceForm.js',
      'cigno/externals/jit/js/jit-yc.js',
-     'cigno/js/SOSClient.js'
+     'cigno/js/SOSClient.js',
+     'cigno/js/OpenSeaMapSource.js'
     ),
     ('cigno.css',
      'cigno/externals/ext/examples/ux/css/Spinner.css',
