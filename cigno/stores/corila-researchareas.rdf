@@ -94,9 +94,41 @@
   </skos:Collection>
   
   <skos:Collection rdf:about="researchareas/4">
-    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/20"/>
-    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/30"/>
-    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/36"/>
-    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/theme/21"/>
+	<!-- riferiti al tema informazione -->
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1975"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/616"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/2924"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4851"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1979"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/14897"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/5348"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/14933"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/2196"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1986"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/14917"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4302"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/14857"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/13276"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/3477"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1292"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/5167"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/2195"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4398"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1984"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/13060"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4309"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/14916"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/3645"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4307"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/8454"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4313"/>
+	<!-- riferiti al tema ricerca -->	
+    <skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1974"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/1200"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/5348"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/4302"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/5346"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/7135"/>
+	<skos:member rdf:resource="http://www.eionet.europa.eu/gemet/concept/5353"/>
   </skos:Collection>
 </rdf:RDF>

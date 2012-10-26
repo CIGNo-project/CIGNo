@@ -68,7 +68,7 @@ INSTALLED_APPS = (
     'modeltranslation',
     'rosetta',
     'mediagenerator',
-    'cigno.aisstat',
+#    'cigno.aisstat',
 )
 
 MODELTRANSLATION_TRANSLATION_REGISTRY = "cigno.translation"
@@ -110,8 +110,8 @@ ROOT_MEDIA_FILTERS = {
 
 YUICOMPRESSOR_PATH = '/usr/share/yui-compressor/yui-compressor.jar'
 
-MEDIA_DEV_MODE = False # DEBUG
-DEV_MEDIA_URL = '/static/cigno/'
+MEDIA_DEV_MODE = DEBUG
+DEV_MEDIA_URL = '/devmedia/'
 PRODUCTION_MEDIA_URL = '/static/cigno/'
 
 #GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
