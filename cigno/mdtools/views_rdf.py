@@ -44,6 +44,7 @@ reverse_relations = {"http://purl.org/dc/terms/hasVersion": "http://purl.org/dc/
 reverse_relations.update(dict((v,k) for k, v in reverse_relations.iteritems()))
 cigno_r = surf.ns.CIGNO['Resource']
 cigno_ra = surf.ns.CIGNO['ResearchArea']
+cigno_ras = surf.ns.CIGNO['ResearchAreas']
 gemet_sg = surf.ns.GEMET['SuperGroup']
 gemet_g = surf.ns.GEMET['Group']
 gemet_t = surf.ns.GEMET['Theme']
@@ -110,7 +111,8 @@ class CignoRDF(object):
     self.store.save()
 
   def get_where_tree(self, res):
-    if res.subject == rdflib.term.URIRef('http://www.corila.it/cigno/researchareas/'):
+    # if res.subject == rdflib.term.URIRef('http://www.corila.it/cigno/researchareas/'):
+    if cigno_ras in res.rdf_type:
       where = [("?s", a, surf.ns.CIGNO['Resource']),
                ("?s", surf.ns.DCTERMS['subject'], "?key"),
                ("?cc", member, "?key"),
