@@ -403,6 +403,9 @@ class Inspire(models.Model):
         return keywords
         
             
+    def keywords_string_clean(self, lang=None):
+        return ' '.join(self.keywords_list_clean(lang))
+
     def keywords_list_clean(self, lang=None):
         if not lang:
             lang = get_language() or DEFAULT_LANGUAGE
@@ -411,9 +414,7 @@ class Inspire(models.Model):
             list = json.loads(self.gemetkeywords)
             for k in list:
                 keywords.append(k[0][lang].split('>')[-1].strip())
-            return ' '.join(keywords)
-        else:
-            return ''
+        return keywords
 
     def mldict(self, field_name):
         data = {}
@@ -482,6 +483,18 @@ class Resource(Inspire, PermissionLevelMixin):
     #     resource.language = self.language
 
     @property
+    def geoextents(self):
+        extents = []
+        geonames = self.geonamesGeoJson()
+        for gn in geonames['features']:
+            east = str(gn['geometry']['coordinates'][0])
+            north = str(gn['geometry']['coordinates'][1])
+            extents.append([east, north, east, north])
+        if self.geographic_bounding_box_geometry is not None:
+            extents.append(self.geographic_bounding_box_geometry.extent)
+        return extents
+
+    @property
     def thumbnail_exists(self):
         if self.base_file and self.base_file.url != '':
             filename = os.path.basename(self.base_file.name)
@@ -507,6 +520,7 @@ class Resource(Inspire, PermissionLevelMixin):
         if not hasattr(self, "_metadata_links_cache"):
             gn = Layer.objects.gn_catalog
             self._metadata_links_cache = [('text/xml', 'TC211', gn.url_for_uuid(self.uuid))]
+            gn.logout()
         return self._metadata_links_cache
 
     def save_to_geonetwork(self):
@@ -611,6 +625,9 @@ class Resource(Inspire, PermissionLevelMixin):
 
 def post_save_resource(instance, sender, **kwargs):    
     logger.debug("POST SAVE titleml %s" % getattr(instance, 'titleml'))
+    # syncGeonames has to come first (so geonetwork can use extents
+    instance.syncGeonames()
+
     instance.save_to_geonetwork()
 
     # save CignoResources in RDF
@@ -625,7 +642,6 @@ def post_save_resource(instance, sender, **kwargs):
                                instance.mldict('titleml'),
                                gemetkeywords
                                )
-    instance.syncGeonames()
 
 
 signals.post_save.connect(post_save_resource, sender=Resource)
@@ -734,7 +750,7 @@ class LayerExt(Layer, Inspire):
     # def _populate_resource(self, resource):
     #     resource.supplemental_information = self.supplemental_information
     #     resource.geographic_bounding_box = self.geographic_bounding_box
-    #     resource.keywords = self.keywords_list_clean()
+    #     resource.keywords = self.keywords_string_clean()
 
     # valido il modello: verifico che il primo inserimento di un metadato
     # venga fatto dal modello maps.Layer
@@ -795,11 +811,11 @@ def post_save_layer(instance, sender, **kwargs):
         layerext.spatial_representation_type_ext.add(*spatial_representation_types)
 signals.post_save.connect(post_save_layer, sender=Layer)
 
-def post_delete_layerext(instance, sender, **kwargs):
+# layer object must exist so change from layerext to layer
+def post_delete_layer(instance, sender, **kwargs):
     crdf = CignoRDF()
-    crdf.remove(instance.get_public_url())
-signals.post_delete.connect(post_delete_layerext, sender=LayerExt)
-
+    crdf.remove(surf.ns.LOCAL[instance.get_absolute_url()])
+signals.post_delete.connect(post_delete_layer, sender=Layer)
 
 def post_save_layerext(instance, sender, **kwargs):    
     """
@@ -810,7 +826,10 @@ def post_save_layerext(instance, sender, **kwargs):
         instance.layer_ptr.title = a[DEFAULT_LANGUAGE]
         instance.layer_ptr.abstract = instance.mldict('abstractml')[DEFAULT_LANGUAGE]
         instance.layer_ptr.supplemental_information = instance.mldict('supplemental_information_ml')[DEFAULT_LANGUAGE]
-        instance.layer_ptr.keywords = instance.keywords_list_clean(DEFAULT_LANGUAGE)
+        if instance.layer_ptr.supplemental_information is None:
+            instance.layer_ptr.supplemental_information = '-'
+        # instance.layer_ptr.keywords = instance.keywords_list_clean(DEFAULT_LANGUAGE)
+        instance.layer_ptr.keywords.add(*instance.keywords_list_clean(DEFAULT_LANGUAGE))
         instance.layer_ptr.save()
 
     # save CignoResources in RDF
@@ -943,10 +962,13 @@ class ResponsiblePartyRole(models.Model):
 def get_default_author():
     return CodeRole.objects.get(isoid='author').id
 
+def get_default_poc():
+    return CodeRole.objects.get(isoid='pointOfContact').id
+
 class MdResponsiblePartyRole(models.Model):
     responsible_party = models.ForeignKey(ResponsibleParty)
     metadata = models.ForeignKey(LayerExt)
-    role = models.ForeignKey(CodeRole, limit_choices_to = {'isoid': 'author'}, default=get_default_author)
+    role = models.ForeignKey(CodeRole, limit_choices_to = {'isoid': 'author'}, default=get_default_poc)
     class Meta:
          verbose_name_plural = _(u"Responsible party role (metadata)")
     def __unicode__(self):
@@ -964,7 +986,7 @@ class ResourceResponsiblePartyRole(models.Model):
 class ResourceMdResponsiblePartyRole(models.Model):
     responsible_party = models.ForeignKey(ResponsibleParty)
     metadata = models.ForeignKey(Resource, related_name='mdresponsiblepartyrole_set')
-    role = models.ForeignKey(CodeRole, limit_choices_to = {'isoid': 'author'}, default=get_default_author)
+    role = models.ForeignKey(CodeRole, limit_choices_to = {'isoid': 'author'}, default=get_default_poc)
     class Meta:
          verbose_name_plural = _(u"Responsible party role (metadata)")
     def __unicode__(self):
