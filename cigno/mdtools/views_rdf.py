@@ -271,7 +271,7 @@ def test():
 def graph_connections(request):
     crdf = CignoRDF()
     #s = 'http://cigno.ve.ismar.cnr.it/data/geonode:parchi_nazionali_regionali'
-    s = request.POST['s']
+    s = request.REQUEST['s']
     if not surf.util.is_uri(s):
       s = surf.ns.LOCAL[s]
 
@@ -345,7 +345,7 @@ def graph_connections(request):
 @csrf_exempt
 def rdfapi(request, action="read"):
   # get base subject
-  s = request.POST['s']
+  s = request.REQUEST['s']
   if not surf.util.is_uri(s):
     s = surf.ns.LOCAL[s]
 
@@ -422,7 +422,7 @@ def rdfapi(request, action="read"):
                              })
     
   elif action == 'create':
-    rows = simplejson.loads(request.POST['rows'])
+    rows = simplejson.loads(request.REQUEST['rows'])
     if not isinstance(rows, list): rows = [rows]
     for row in rows:
       crdf.store.add_triple(rdflib.URIRef(s), rdflib.URIRef(row['p']), rdflib.URIRef(row['o']))
@@ -441,7 +441,7 @@ def rdfapi(request, action="read"):
     #  type_uri = result['results']['bindings'][0]['o']['value']
 
   elif action == 'destroy':
-    rows = simplejson.loads(request.POST['rows'])
+    rows = simplejson.loads(request.REQUEST['rows'])
     if not isinstance(rows, list): rows = [rows]
     for row in rows:
       # get triple by id 
