@@ -28,7 +28,7 @@ Ext.onReady(function() {
 <div id="identification" class="x-hide-display">
 <!--h4>{% trans "Identification" %}</h4-->
 <!--p> <strong>{{ fl.titleml }}:</strong> {{ md.titleml }} </p-->
-<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|sanitize|default:_("-") }} </p>
+<p> <strong>{{ fl.abstractml }}:</strong> {{ md.abstractml|default:_("-")|urlize }} </p>
 {% if is_layer %}
 <div id="preview_map"></div>
 {% else %}
@@ -66,7 +66,7 @@ Ext.onReady(function() {
 </p>
 <hr/>
 {% if md.access_constraints %}<p> <strong>{{ fl.access_constraints }}:</strong> {{ md.access_constraints|default:_("-") }}</p>{% endif %}
-<p> <strong>{{ fl.use_limitation }}:</strong> {{ md.use_limitation|default:_("<a href='/license/ismar/'>ISMAR Data Lincese</a>") }}</p>
+{% if md.license %}<p> <strong>{{ fl.license }}:</strong> {{ md.license.label }} {{md.license.url|urlize}}</p>{% endif %}
 {% if md.other_constraints %}<p> <strong>{{ fl.other_constraints }}:</strong> {{ md.other_constraints|default:_("-") }}</p>{% endif %}
 {% if md.security_constraints %}<p> <strong>{{ fl.security_constraints }}:</strong> {{ md.security_constraints|default:_("-") }}</p>{% endif %}
 <hr/>
@@ -112,8 +112,8 @@ Ext.onReady(function() {
 </div>
 <div id="additional" class="x-hide-display">
 <!--h4>{% trans "Tmp" %}</h4-->
-<p> <strong>{{ fl.other_citation_details }}:</strong> {{ md.other_citation_details|default:_("-") }} </p>
-<p> <strong>{{ fl.supplemental_information_ml }}:</strong> {{ md.supplemental_information_ml|default:_("-") }} </p>
+<p> <strong>{{ fl.other_citation_details }}:</strong> {{ md.other_citation_details|default:_("-")|urlize }} </p>
+<p> <strong>{{ fl.supplemental_information_ml }}:</strong> {{ md.supplemental_information_ml|default:_("-")|urlize }} </p>
 <hr/>
 <p> <strong>{{ fl.presentation_form }}:</strong> {{ md.presentation_form.all|join:', '|default:_("-") }}</p>
 <p> <strong>{{ fl.distribution_format }}:</strong> {{ md.distribution_format.all|join:', '|default:_("-") }}</p>
