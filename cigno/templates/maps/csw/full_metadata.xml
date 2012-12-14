@@ -119,7 +119,7 @@
        <gmd:citation>
          <gmd:CI_Citation>
            <gmd:title>
-             <gco:CharacterString>{% firstof layer.layerext.titleml_it layer.layerext.title %}</gco:CharacterString>
+             <gco:CharacterString>{% filter force_escape %}{% firstof layer.layerext.titleml_it layer.layerext.title %}{% endfilter %}</gco:CharacterString>
            </gmd:title>
            <gmd:date>
              <gmd:CI_Date>
@@ -153,7 +153,7 @@
          </gmd:CI_Citation>
        </gmd:citation>
        <gmd:abstract>
-         <gco:CharacterString>{% firstof layer.layerext.abstractml_it layer.layerext.abstract %}</gco:CharacterString>
+         <gco:CharacterString>{% filter force_escape %}{% firstof layer.layerext.abstractml_it layer.layerext.abstract %}{% endfilter %}</gco:CharacterString>
        </gmd:abstract>
        <gmd:purpose nilReason="missing"></gmd:purpose>
        <gmd:status>
