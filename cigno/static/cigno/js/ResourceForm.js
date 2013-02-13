@@ -508,19 +508,11 @@ Ext.ResourceForm = Ext.extend(Ext.FormPanel, {
 			   xtype: 'label',
 			   html:'<hr/>'
 			},{
-			   xtype: 'radiogroup',
-			   fieldLabel: gettext('Use limitation'),
-			   name: 'use_limitation',
-			   columns: 2,
-               items: [
-                  {boxLabel: 'ISMAR Data license', name: 'use_limitation', inputValue: 'ISMAR Data license'} ,
-                  {boxLabel: 'CC Attribution (by)', name: 'use_limitation', inputValue: 'CC Attribution (by)'} ,
-                  {boxLabel: 'CC Attribution + NoDerivatives (by-nd)', name: 'use_limitation', inputValue: 'CC Attribution + NoDerivatives (by-nd)'} ,
-                  {boxLabel: 'CC Attribution + ShareAlike (by-sa)', name: 'use_limitation', inputValue: 'CC Attribution + ShareAlike (by-sa)'} ,
-                  {boxLabel: 'CC Attribution + Noncommercial (by-nc)', name: 'use_limitation', inputValue: 'CC Attribution + Noncommercial (by-nc)'} ,
-                  {boxLabel: 'CC Attribution + Noncommercial + NoDerivatives (by-nc-nd)', name: 'use_limitation', inputValue: 'CC Attribution + Noncommercial + NoDerivatives (by-nc-nd)'} ,
-                  {boxLabel: 'CC Attribution + Noncommercial + ShareAlike (by-nc-sa)', name: 'use_limitation', inputValue: 'CC Attribution + Noncommercial + ShareAlike (by-nc-sa)'} 
-               ]
+			   xtype: "autocombo",
+			   hiddenName: "license",
+			   url: '/api/license/',
+			   emptyText:'select...',
+			   fieldLabel: gettext('License')
 			},{
 			   xtype: 'label',
 			   html:'<hr/>'

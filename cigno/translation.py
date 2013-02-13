@@ -24,7 +24,10 @@ class BaseCodeTranslationOptions(TranslationOptions):
 class ResponsiblePartyTranslationOptions(TranslationOptions):
     fields = ('organization_name', 'office')
 
+class CodeLicenseTranslationOptions(TranslationOptions):
+    fields = ('label', 'abstract')
 
+translator.register(CodeLicense, CodeLicenseTranslationOptions)
 translator.register(DcCodeResourceType, BaseCodeTranslationOptions)
 translator.register(CodeScope, BaseCodeTranslationOptions)
 translator.register(CodeTopicCategory, BaseCodeTranslationOptions)

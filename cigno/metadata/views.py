@@ -597,6 +597,7 @@ def _api_list(request, model):
                          'updatefrequency': CodeMaintenanceFrequency,
                          'spatialrepresentationtype': CodeSpatialRepresentationType,
                          'verticaldatum': CodeVerticalDatum,
+                         'license': CodeLicense,
                          }
 
     indent = 4 if request.GET.__contains__('indent') else None

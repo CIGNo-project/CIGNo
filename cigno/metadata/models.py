@@ -75,6 +75,17 @@ METADATA_LANGUAGES = (
 ######################################
 ## Code classes
 #######################################
+class CodeLicense(models.Model):
+    label            = models.CharField(_(u'License name'), max_length=255)
+    abstract         = models.CharField(_(u'Abstract'), max_length=500, null=True, blank=True)
+    url              = models.URLField(_(u'License reference'), null=True, blank=True)
+    class Meta:
+        verbose_name = _(u"License")
+        verbose_name_plural = _(u"Licenses")
+        
+    def __unicode__(self):
+        return u'%s' % self.label
+
 class DcCodeResourceType(models.Model):
     label            = models.CharField(_(u'resource type'), max_length=255)
     dcid            = models.CharField(_('DC identifier'), max_length=100)
@@ -309,6 +320,7 @@ class Inspire(models.Model):
     ## section
     # TODO: use layer permission
     #use_limitation          = models.TextField(_(u'use limitation'), null=True, blank=True)
+    license                 = models.ForeignKey(CodeLicense, verbose_name=_('license'), null=True, blank=True, related_name='%(app_label)s_%(class)s_license') 
     use_limitation          = models.CharField(_(u'use limitation'), max_length=300, choices=[(i,i) for i in ALL_LICENSES],  null=True, blank=True)
     access_constraints      = models.ForeignKey(CodeRestriction, verbose_name=_('access constraints'), null=True, blank=True, related_name='%(app_label)s_%(class)s_access_constraints')
     use_constraints        = models.ForeignKey(CodeRestriction, verbose_name=_('use constraints'), null=True, blank=True, related_name='%(app_label)s_%(class)s_user_constraints')

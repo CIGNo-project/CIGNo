@@ -112,6 +112,13 @@ class CodeRefSysAdmin(TranslationAdmin):
         js = translation_js
         css = translation_css
 
+class CodeLicenseAdmin(TranslationAdmin):
+    list_editable = ['label', 'abstract']
+    list_display =  ['id', 'label', 'abstract']
+    class Media:
+        js = translation_js
+        css = translation_css
+
 class CodeDistributionFormatAdmin(TranslationAdmin):
     list_editable = ['format','label', 'version', 'mimetype', 'ordering']
     list_display =  ['id', 'format', 'label', 'version', 'mimetype', 'ordering']
@@ -398,6 +405,7 @@ admin.site.register(CodeTopicCategory, BaseCodeIsoAdmin)
 admin.site.register(CodePresentationForm, BaseCodeIsoAdmin) 
 admin.site.register(CodeSpatialRepresentationType, BaseCodeIsoAdmin)
 admin.site.register(CodeRefSys, CodeRefSysAdmin)
+admin.site.register(CodeLicense, CodeLicenseAdmin)
 admin.site.register(CodeCharacterSet, BaseCodeIsoAdmin)
 admin.site.register(CodeVerticalDatum, BaseCodeAdmin)
 admin.site.register(CodeMaintenanceFrequency, BaseCodeIsoAdmin)
