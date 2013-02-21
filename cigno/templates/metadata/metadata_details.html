@@ -91,7 +91,8 @@ Ext.onReady(function() {
 </div>
 <div id="spatial" class="x-hide-display">
 <h4>{% trans "Geographic extent" %}</h4>
-<p> <strong>{{ fl.ref_sys }}:</strong>  <a target="_blank" href="http://spatialreference.org/ref/epsg/{{ md.ref_sys.srid }}/">{{ md.ref_sys }}</a></p>
+{% if is_layer %}
+<p> <strong>{{ fl.ref_sys }}:</strong>  <a target="_blank" href="http://spatialreference.org/ref/epsg/{{ md.geographic_bounding_box_geometry.srid }}/">{{ md.srs_name }}</a></p>
 <p> <strong>{{ fl.geographic_bounding_box }}:</strong> 
   <table id="id_bbox">
     <tr><td></td><td>North<br/>{{ md.geographic_bounding_box_geometry.extent.3 }}</td><td></td></tr>
@@ -99,6 +100,7 @@ Ext.onReady(function() {
     <tr><td></td><td>South<br/>{{ md.geographic_bounding_box_geometry.extent.1 }}</td><td></td></tr>
   </table>
 </p>
+{% endif %}
 <p> <strong>{{ fl.vertical_datum }}:</strong> {{ md.vertical_datum|default:_("-") }}</p>
 <p> <strong>{{ fl.vertical_extent_min }}:</strong> {{ md.vertical_extent_min|default:_("-") }}</p>
 <p> <strong>{{ fl.vertical_extent_max }}:</strong> {{ md.vertical_extent_max|default:_("-") }}</p>
@@ -126,7 +128,7 @@ Ext.onReady(function() {
 <hr>
 <h4>{% trans "Metadata details" %}</h4>
 <p> <strong>{{ fl.md_date_stamp }}:</strong> {{ md.md_date_stamp|date:"d F Y" }}</p>
-<p > <strong>{{ fl.md_responsible_party_role }}:</strong>
+<p > <strong>{% trans fl.md_responsible_party_role %}:</strong>
   {% for k in md.mdresponsiblepartyrole_set.all %} 
   {% include "metadata/responsibleparty.html" %}
   {% endfor %}
