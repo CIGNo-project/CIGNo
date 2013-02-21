@@ -47,7 +47,7 @@ class ResourceForm(forms.ModelForm):
     class Meta:
         model = Resource
         # TODO: use default language (configure resource_upload.html)
-        fields = ('type', 'titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'base_file',  'url_field', 'use_limitation', 'geographic_bounding_box', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext')
+        fields = ('type', 'titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'base_file',  'url_field', 'use_limitation', 'geographic_bounding_box', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext','license')
         #exclude = ('uuid','name')
 
     ### TODO manage permissions
@@ -57,7 +57,7 @@ class LayerExtForm(forms.ModelForm):
     class Meta:
         model = LayerExt
         # TODO: use default language (configure resource_upload.html)
-        fields = ('titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'use_limitation', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext')
+        fields = ('titleml_it', 'titleml_en', 'abstractml_it', 'abstractml_en', 'gemetkeywords', 'use_limitation', 'geonamesids', 'lineage_it' , 'lineage_en', 'equivalent_scale', 'distance', 'uom_distance', 'vertical_datum', 'vertical_extent_min', 'vertical_extent_max', 'uom_vertical_extent', 'other_citation_details_it', 'other_citation_details_en', 'supplemental_information_ml_it', 'supplemental_information_ml_en', 'resource_type', 'language', 'character_set', 'update_frequency', 'spatial_representation_type_ext','license')
         #exclude = ('uuid','name')
 
 class ResponsiblePartyForm(forms.ModelForm):
