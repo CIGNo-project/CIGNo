@@ -237,6 +237,7 @@ class LayerExtAdmin(TranslationAdmin):
         (_('Constraints'), {
                 'classes': ('collapse closed',),
                 'fields': ( 
+                    'license',
                     'use_limitation', 
                     ('access_constraints', 'use_constraints'),
                     'other_constraints', 
@@ -370,6 +371,7 @@ class ResourceAdmin(TranslationAdmin):
         (_('Constraints'), {
                 'classes': ('collapse closed',),
                 'fields': ( 
+                    'license',
                     'use_limitation', 
                     ('access_constraints', 'use_constraints'),
                     'other_constraints', 
