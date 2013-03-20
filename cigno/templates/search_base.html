@@ -55,7 +55,7 @@ Ext.onReady(function(){
             cql_relation = '<>';
             cql_index = 'abstract';
          }
-         console.log(category);
+         //console.log(category);
              return  cql_index + " " + cql_relation +  " " + "'" + cql_searchterm.replace(/'/g,"''") + "'";  
       }).join(' and ');
       // return this.map(function(facet) {
@@ -257,8 +257,8 @@ Ext.onReady(function(){
 	   renderTo: 'tabs-container',
 	   activeTab: 0,
 	   padding: 10, 
-	   items:[{contentEl:'faceted_search', title:'Text/faceted search'},
-               {title:'Browse by Thematic Classification',
+	   items:[{contentEl: 'faceted_search', title: '{% trans "Text/faceted search" %}'},
+               {title: '{% trans "Browse by Thematic Classification" %}',
 		xtype:'treepanel',
 		useArrows: true,
 		autoScroll: true,
@@ -285,7 +285,7 @@ Ext.onReady(function(){
 		       }
 		}
 	       },
-               {title:'Browse by GEMET Classification',
+               {title:'{% trans "Browse by GEMET Classification" %}',
 		xtype:'treepanel',
 		useArrows: true,
 		autoScroll: true,
