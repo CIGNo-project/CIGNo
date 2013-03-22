@@ -58,17 +58,20 @@ def sanitize_sparql(sparql):
   return re.sub(r'}\s*}\s*UNION\s*{\s*{', '} UNION {', __sparql) 
 
 def save_graph():
-  serialize_store(os.path.join(settings.PROJECT_ROOT,"stores","rdfstore"), os.path.join(settings.PROJECT_ROOT,"stores","rdfstore.rdf"))
+  serialize_store(os.path.join(settings.PROJECT_ROOT,"stores",settings.RDFSTORE), os.path.join(settings.PROJECT_ROOT,"stores","rdfstore.rdf"))
 
 def reload_graph():
-  store = get_rdflib_store(os.path.join(settings.PROJECT_ROOT,"stores","rdfstore"), False)
+  store = get_rdflib_store(os.path.join(settings.PROJECT_ROOT,"stores",settings.RDFSTORE), False)
   store.load_triples(source=os.path.join(settings.PROJECT_ROOT,"stores","rdfstore.rdf"))
 
+def reload_sources():
+  store = get_rdflib_store(os.path.join(settings.PROJECT_ROOT,"stores",settings.RDFSTORE), True, True)
+  
 
 class CignoRDF(object):
   def __init__(self):
     # init RDF session
-    self.store = get_rdflib_store(os.path.join(settings.PROJECT_ROOT,"stores","rdfstore"))
+    self.store = get_rdflib_store(os.path.join(settings.PROJECT_ROOT,"stores",settings.RDFSTORE))
     self.session = surf.Session(self.store, auto_persist=True, auto_load=True)
     # init RDF classes
     self.CignoResources = self.session.get_class(surf.ns.CIGNO['Resource'])
@@ -168,6 +171,7 @@ class CignoRDF(object):
       where = [("?s", a, cigno_r),
                ("?s", surf.ns.DCTERMS['subject'], res.subject)
                ]
+    import sys
     return where
 
   def get_not_empty_members(self, res):

@@ -55,7 +55,7 @@ INSTALLED_APPS = (
     'taggit',
     'south',
     'sorl.thumbnail',
-    
+
     'geonode.core',
     'geonode.maps',
     'geonode.proxy',
@@ -69,7 +69,8 @@ INSTALLED_APPS = (
     'modeltranslation',
     'rosetta',
     'mediagenerator',
-#    'cigno.aisstat',
+    'django.contrib.gis', # serve per south e per migrare le colonne geometriche
+    'analytical'
 )
 
 gettext_noop = lambda s: s
@@ -84,6 +85,7 @@ MODELTRANSLATION_DEBUG = DEBUG
 
 
 TEMPLATE_DIRS = (
+  os.path.join(PROJECT_ROOT,"templates-comune"),
   os.path.join(PROJECT_ROOT,"local_templates"),
   os.path.join(PROJECT_ROOT,"templates"),
   os.path.join(GEONODE_ROOT,"templates"),
@@ -104,7 +106,7 @@ ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'cigno.dashboard.CustomAppIndexDashboard'
 
 
 try:
-    from local_settings import *
+    from local_settings_comune import *
 except ImportError:
     pass
 
@@ -144,7 +146,7 @@ MEDIA_BUNDLES = (
      'cigno/externals/jit/js/jit-yc.js',
      'cigno/js/SOSClient.js',
      'cigno/js/OpenSeaMapSource.js'
-    ),
+     ),
     ('cigno.css',
      'cigno/externals/ext/examples/ux/css/Spinner.css',
      'cigno/externals/ext/examples/ux/css/MultiSelect.css'
@@ -157,3 +159,4 @@ THUMBNAIL_ENGINE='sorl.thumbnail.engines.convert_engine.Engine'
 #THUMBNAIL_DEBUG=DEBUG
 THUMBNAIL_FORMAT='PNG'
 
+RDFSTORE = 'rdfstore'

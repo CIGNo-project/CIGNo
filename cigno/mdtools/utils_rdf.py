@@ -3,7 +3,7 @@ from rdflib.graph import Graph, ConjunctiveGraph
 import rdflib
 import surf
 import os
-def get_rdflib_store(db_conn, load_triples=True):
+def get_rdflib_store(db_conn, load_triples=True, force_create=False):
     createdb = False
     rdfstore = rdflib.plugin.get('Sleepycat', rdflib.store.Store)()
     # rdflib can create necessary structures if the store is empty
@@ -20,10 +20,10 @@ def get_rdflib_store(db_conn, load_triples=True):
     surfstore = surf.Store(reader='rdflib',
                            writer='rdflib',
                            rdflib_store = rdfstore)
-    if createdb and load_triples:      
+    if (createdb or force_create) and load_triples:      
       sources = [
         #'file:/var/www/geonode/src/GeoNodePy/geonode/corila-researchareas.rdf',
-        os.path.join(settings.PROJECT_ROOT,"stores","corila-researchareas.rdf"),
+        os.path.join(settings.PROJECT_ROOT,"stores","researchareas.rdf"),
         'http://www.eionet.europa.eu/gemet/gemet-backbone.rdf',
         'http://www.eionet.europa.eu/gemet/gemet-skoscore.rdf',
         'http://www.eionet.europa.eu/gemet/gemet-groups.rdf?langcode=en',
