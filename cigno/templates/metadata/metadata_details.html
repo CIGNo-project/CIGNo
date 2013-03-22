@@ -75,6 +75,9 @@ Ext.onReady(function() {
   {% include "metadata/responsibleparty.html" %}
   {% endfor %}
 </p>
+<p> <strong>{% trans "Community user" %}:</strong>
+    <a href="{{ md.owner.get_profile.get_absolute_url }}"> {{ md.owner.username }} </a>
+</p>
 </div>
 <div id="classification" class="x-hide-display">
 <p> <strong>{{ fl.topic_category_ext }}:</strong> {{ md.topic_category_ext.all|join:', '|default:_("-") }}</p>
